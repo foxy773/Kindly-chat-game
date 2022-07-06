@@ -3,7 +3,7 @@ const c = canvas.getContext('2d');
 
 window.onload = function () {
     startNewGame();
-    setInterval(update, 10);
+    setInterval(update, 10);   // Update the game every 10 milliseconds.
 }
 // Global Variables
 // Player / Character attributes
@@ -43,7 +43,6 @@ class Player {
 
     update() {
         this.x += this.xSpeed;  //Move the player on the x-axis.
-        console.log()
     }
 }
 
@@ -69,24 +68,25 @@ class Obstacle {
         }
     }
     update() {
-        /* Removes the obstacles that are below the player and out of frame */
+        // Removes the obstacles that are below the player and out of frame
         if (this.y > canvas.height + 150) {
             this.visible = false;
         }
 
-        // If the obstacle is above the player
+        // If the obstacle is above the player.
         if (player.y < this.y - 21) {
             this.wasAbove = true;
         }
 
         // Collision Detection between player and platform
         if (player.x < this.x + this.width && player.x + player.width > this.x && player.y < this.y + this.height && player.y + player.height > this.y && this.wasAbove && this.visible) {
-            player.ySpeed = -800;
+            player.ySpeed = -800;   // The player speed on the y-axis upon collision.
             console.log(obstacleY);
             console.log(player.ySpeed)
         }
 
-        if (player.y < obstacles[obstacles.length - 90].y /* && level < 1 */) {
+        // Auto generates obstacles and additions the level + 1
+        if (player.y < obstacles[obstacles.length - 90].y) { // If the player is above the 10th platform from the bottom.
             level++;
             generateObstacles();
             console.log("Generate new obstacles", this.ySpeed, "ySpeed")
@@ -98,8 +98,8 @@ class Obstacle {
             gameOver();
         } */
 
-        obstacles[2].width = 10000;
-        obstacles[2].x = 0;
+        obstacles[2].width = 10000; // Sets the width of the third platform from the bottom to be the start platform.
+        obstacles[2].x = 0;         // Sets the x-position of the third platform from the bottom to be the start platform.
 
         /* Increases the fall speed/velocity of the player*/
         this.y -= player.ySpeed * 0.01;
@@ -116,6 +116,7 @@ function startNewGame() {
     player.xSpeed = 0;
     console.log("NEW GAME!")
 }
+
 // Generates the obstacles.
 function generateObstacles() {
     const numberOfObstacles = 100;
@@ -149,9 +150,6 @@ function update() {
 
     player.show();
     player.update();
-
-    /* console.log(obstacles) */
-
 }
 
 // Event Listeners
