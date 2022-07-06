@@ -36,14 +36,13 @@ class Player {
     show() {
         c.beginPath();
         c.arc(this.x + 15, this.y, this.r, 0, (2 * Math.PI), false);
-        c.fillStyle = "#1cd300";
-        //Kindly green
+        c.fillStyle = "#1cd300"; //Kindly green
         c.closePath();
         c.fill();
     }
 
     update() {
-        this.x += this.xSpeed;
+        this.x += this.xSpeed;  //Move the player on the x-axis.
         console.log()
     }
 }
@@ -56,9 +55,9 @@ class Obstacle {
         this.height = obstacleHeight;
         this.ySpeed = 3;
         this.visible = true;
-        this.moving = false;
+        this.moving = false;            // Not used
         this.wasAbove = false;
-        this.chance = Math.floor(Math.random() * 10);
+        this.chance = Math.floor(Math.random() * 10);   // Not used
     }
     show() {
         /* if (this.chance === 2) {
@@ -75,10 +74,12 @@ class Obstacle {
             this.visible = false;
         }
 
+        // If the obstacle is above the player
         if (player.y < this.y - 21) {
             this.wasAbove = true;
         }
 
+        // Collision Detection between player and platform
         if (player.x < this.x + this.width && player.x + player.width > this.x && player.y < this.y + this.height && player.y + player.height > this.y && this.wasAbove && this.visible) {
             player.ySpeed = -800;
             console.log(obstacleY);
@@ -91,7 +92,7 @@ class Obstacle {
             console.log("Generate new obstacles", this.ySpeed, "ySpeed")
         }
 
-        let playerIsDead = obstacles.every(obstacle => obstacle.y < this.y / 10);
+        /* let playerIsDead = obstacles.every(obstacle => obstacle.y > player.y * 100); */
 
         /* if (playerIsDead) {
             gameOver();
@@ -106,24 +107,25 @@ class Obstacle {
     }
 }
 
+// Starts a new game.
 function startNewGame() {
     obstacles = [];
     level = 0;
-    player = new Player(300, 300, playerRadius);
+    player = new Player(300, 300, playerRadius); // The start position x-axis, y-axis, and radius size of the player.
     generateObstacles()
     player.xSpeed = 0;
     console.log("NEW GAME!")
 }
-
+// Generates the obstacles.
 function generateObstacles() {
     const numberOfObstacles = 100;
     /* obstacles = []; */
     for (let i = 0; i < numberOfObstacles; i++) {
-        let ob = new Obstacle(Math.floor(Math.random() * 600), obstacleY);
+        let ob = new Obstacle(Math.floor(Math.random() * 600), obstacleY); // Random x-axis position between 0 and 600.
         obstacles.push(ob);
         console.log("gen")
         if (level === 0) {
-            obstacleY -= 100
+            obstacleY -= 100 // The start position of the obstacle y-axis.
         } else {
             
         }
@@ -132,6 +134,7 @@ function generateObstacles() {
     }
 }
 
+// Updates the game
 function update() {
     //background
     c.fillStyle = 'lightblue';
@@ -151,20 +154,24 @@ function update() {
 
 }
 
+// Event Listeners
+
+// If the button is pressed the player will move on the x-axis with the direction chosen.
 function keyDown(e) {
-    if (e.keyCode === 39) {
+    if (e.keyCode === 39) { // Right arrow key
         player.xSpeed = 5
     }
-    if (e.keyCode === 37) {
+    if (e.keyCode === 37) { // Left arrow key
         player.xSpeed = -5;
     }
 }
 
+// If the button is let go if the x-axis speed of the player will halt.
 function keyUp(e) {
-    if (e.keyCode === 39) {
+    if (e.keyCode === 39) { // Right arrow key
         player.xSpeed = 0;
     }
-    if (e.keyCode === 37) {
+    if (e.keyCode === 37) { // Left arrow key
         player.xSpeed = 0;
     }
 }
