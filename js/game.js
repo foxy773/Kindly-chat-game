@@ -35,7 +35,7 @@ class Player {
 
     show() {
         c.beginPath();
-        c.arc(this.x + 15, this.y, this.r, 0, (2 * Math.PI), false);
+        c.arc(this.x + 15, this.y, this.r, 0, (2 * Math.PI), false);    //Draw a circle at the player's position / makes the player a circle.
         c.fillStyle = "#1cd300"; //Kindly green
         c.closePath();
         c.fill();
@@ -65,7 +65,7 @@ class Obstacle {
         } */
         if (this.visible) {
             c.fillStyle = 'red';
-            c.fillRect(this.x, this.y, this.width, this.height);
+            c.fillRect(this.x, this.y, this.width, this.height); // Draws the obstacle.
         }
     }
     update() {
@@ -166,7 +166,7 @@ function keyDown(e) {
     }
 }
 
-// If the button is let go if the x-axis speed of the player will halt.
+// If the button is let go the x-axis speed of the player will halt.
 function keyUp(e) {
     if (e.keyCode === 39) { // Right arrow key
         player.xSpeed = 0;
