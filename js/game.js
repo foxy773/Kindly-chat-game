@@ -26,6 +26,7 @@ const obstacleWidth = 60;
 
 let score;
 let highScore;
+let lastIndex 
 
 class Player {
     constructor(x, y, r) {
@@ -96,22 +97,24 @@ class Obstacle {
             generateObstacles();
             console.log("Generate new obstacles", this.ySpeed, "ySpeed")
         }
-
-        let playerIsDead = obstacles.every(obstacle => obstacle.y < (player.y + player.height - 500)); // If the player is dead.
-        if (playerIsDead) {
+        /* let playerIsDead = 0; */
+        /* let playerIsDead =  */ /* console.log(obstacles.lastIndexOf(obstacle => obstacle.visible === false)); // If the player is dead. */
+       
+        /* if (playerIsDead) {
             startNewGame();
-        }
+        } */
     
-        if (playerIsDead) {
+        /* if (playerIsDead) {
             gameOver();
             console.log("GAME OVER!")
-        }
+        } */
 
         /* Increases the fall speed/velocity of the player*/
         this.y -= player.ySpeed * 0.01;
         /* player.ySpeed += (gravity / (level +1)); */
 
         score = ((this.y) + 9500).toFixed(0);
+        /* console.log(this.y) */
     }
 }
 
@@ -137,7 +140,7 @@ function generateObstacles() {
     for (let i = 0; i < numberOfObstacles; i++) {
         let ob = new Obstacle(Math.floor(Math.random() * 600), obstacleY); // Random x-axis position between 0 and 600.
         obstacles.push(ob);
-        console.log("gen")
+        /* console.log("gen") */
 
         
         if (level !== 0) {
@@ -145,7 +148,7 @@ function generateObstacles() {
         } else {
             obstacleY -= 100
         }
-        console.log(obstacleY, "obstacleY")
+        /* console.log(obstacleY, "obstacleY") */
     }
 
     obstacles[0].width = 1000;
@@ -154,7 +157,7 @@ function generateObstacles() {
 }
 
 // Updates the game
-function update() {
+function update() { 
     //background
     c.fillStyle = 'lightblue';
     c.fillRect(0, 0, 600, 800);
@@ -171,8 +174,12 @@ function update() {
 
     player.ySpeed += gravity * 100;
 
-    
-    console.log(score, "score");
+    lastIndex = obstacles.map(obstacle => obstacle.visible).lastIndexOf(false);
+    if (obstacles[lastIndex]?.y < player.y - 500 || obstacles[0].y < player.y - 500) {
+        gameOver()
+    }
+    console.log(lastIndex, "lastIndex");
+    /* console.log(score, "score"); */
 }
 
 // Event Listeners
@@ -209,7 +216,8 @@ function resetGlobalVariables() {
     gravity = 0.1;
     player.ySpeed = 3;
     player.xSpeed = 0;
-    player.y = 1000;
+    /* player.y = 1000; */
+    startNewGame();
 }
 
 document.onkeydown = keyDown;
