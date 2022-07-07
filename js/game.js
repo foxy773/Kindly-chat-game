@@ -11,7 +11,7 @@ window.onload = function () {
 let player;
 let gravity = 0.1;
 let obstacles = [];
-let obstacleY = 800;
+let obstacleY;
 let level;
 
 const playerRadius = 20;
@@ -22,6 +22,11 @@ const playerWidth = playerRadius + 10;
 const obstacleHeight = 10;
 const obstacleWidth = 60;
 
+// General game attributes
+
+let score;
+let highScore;
+
 class Player {
     constructor(x, y, r) {
         this.x = x;
@@ -29,7 +34,7 @@ class Player {
         this.r = r;
         this.width = playerWidth;
         this.height = playerHeight;
-        this.ySpeed = 1;
+        this.ySpeed = 3;
         this.xSpeed = 0;
     }
 
@@ -86,32 +91,36 @@ class Obstacle {
         }
 
         // Auto generates obstacles and additions the level + 1
-        if (player.y < obstacles[obstacles.length - 90].y) { // If the player is above the 10th platform from the bottom.
+        if (player.y < obstacles[obstacles.length -10].y) { // If the player is above the 10th platform from the bottom.
             level++;
             generateObstacles();
             console.log("Generate new obstacles", this.ySpeed, "ySpeed")
         }
 
-        /* let playerIsDead = obstacles.every(obstacle => obstacle.y > player.y * 100); */
-
-        /* if (playerIsDead) {
+        let playerIsDead = obstacles.every(obstacle => obstacle.y < (player.y + player.height - 500)); // If the player is dead.
+        if (playerIsDead) {
+            startNewGame();
+        }
+    
+        if (playerIsDead) {
             gameOver();
-        } */
-
-        obstacles[2].width = 10000; // Sets the width of the third platform from the bottom to be the start platform.
-        obstacles[2].x = 0;         // Sets the x-position of the third platform from the bottom to be the start platform.
+            console.log("GAME OVER!")
+        }
 
         /* Increases the fall speed/velocity of the player*/
         this.y -= player.ySpeed * 0.01;
-        player.ySpeed += gravity;
+        /* player.ySpeed += (gravity / (level +1)); */
+
+        score = ((this.y) + 9500).toFixed(0);
     }
 }
 
 // Starts a new game.
 function startNewGame() {
-    obstacles = [];
+    score = 0;
     level = 0;
-    player = new Player(300, 300, playerRadius); // The start position x-axis, y-axis, and radius size of the player.
+    obstacles = [];
+    player = new Player(300, 400, playerRadius); // The start position x-axis, y-axis, and radius size of the player.
     generateObstacles()
     player.xSpeed = 0;
     console.log("NEW GAME!")
@@ -119,20 +128,29 @@ function startNewGame() {
 
 // Generates the obstacles.
 function generateObstacles() {
+    if (level === 0) {
+        obstacleY = canvas.height
+    } else {
+        obstacleY = obstacles[obstacles.length - 1].y;
+    }
     const numberOfObstacles = 100;
-    /* obstacles = []; */
     for (let i = 0; i < numberOfObstacles; i++) {
         let ob = new Obstacle(Math.floor(Math.random() * 600), obstacleY); // Random x-axis position between 0 and 600.
         obstacles.push(ob);
         console.log("gen")
-        if (level === 0) {
-            obstacleY -= 100 // The start position of the obstacle y-axis.
-        } else {
-            
-        }
 
-        console.log(obstacleY)
+        
+        if (level !== 0) {
+            obstacleY -= 100
+        } else {
+            obstacleY -= 100
+        }
+        console.log(obstacleY, "obstacleY")
     }
+
+    obstacles[0].width = 1000;
+    obstacles[0].x = 0;
+    console.log(obstacles)
 }
 
 // Updates the game
@@ -150,6 +168,11 @@ function update() {
 
     player.show();
     player.update();
+
+    player.ySpeed += gravity * 100
+
+    
+    console.log(score, "score")
 }
 
 // Event Listeners
@@ -174,17 +197,18 @@ function keyUp(e) {
     }
 }
 
-let gameEnded = false;
 function gameOver() {
+    resetGlobalVariables();
     console.log("GAME OVER!")
-    gameEnded = true;
+    /* gameEnded = true; */
 }
 
 function resetGlobalVariables() {
-    /* gravity = 0.1;
+    obstacles = [];
+    gravity = 0.1;
     player.ySpeed = 3;
     player.xSpeed = 0;
-    player.y = 1000; */
+    player.y = 1000;
 }
 
 document.onkeydown = keyDown;
