@@ -169,10 +169,10 @@ function update() {
     player.show();
     player.update();
 
-    player.ySpeed += gravity * 100
+    player.ySpeed += gravity * 100;
 
     
-    console.log(score, "score")
+    console.log(score, "score");
 }
 
 // Event Listeners
