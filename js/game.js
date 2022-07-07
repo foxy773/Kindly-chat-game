@@ -138,11 +138,11 @@ function generateObstacles() {
     }
     const numberOfObstacles = 100;
     for (let i = 0; i < numberOfObstacles; i++) {
-        let ob = new Obstacle(Math.floor(Math.random() * 600), obstacleY); // Random x-axis position between 0 and 600.
+        let ob = new Obstacle(Math.floor(Math.random() * (canvas.width - obstacleWidth)), obstacleY); // Random x-axis position between 0 and 600.
+        console.log(ob)
         obstacles.push(ob);
         /* console.log("gen") */
 
-        
         if (level !== 0) {
             obstacleY -= 100
         } else {
