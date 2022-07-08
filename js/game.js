@@ -5,29 +5,36 @@ window.onload = function () {
     startNewGame();
     setInterval(update, 10);   // Update the game every 10 milliseconds.
 }
-// Global Variables
-// Player / Character attributes
+// Global Variables.
+// Player / Character attributes.
 
 let player;
 let gravity = 0.1;
-let obstacles = [];
-let obstacleY;
+let platforms = [];
+let platformY;
+let enemies = [];
+let enemyY;
 let level;
 
 const playerRadius = 20;
 const playerHeight = playerRadius;
 const playerWidth = playerRadius + 10;
 
-// Obstacle / Platform attributes
-const obstacleHeight = 10;
-const obstacleWidth = 60;
+// platform / Platform attributes
+const platformHeight = 10;
+const platformWidth = 60;
+
+// Enemies / Enemy attributes
+const enemyRadius = 20;
+const enemyHeight = enemyRadius * 2;
+const enemyWidth = enemyRadius * 2;
 
 // General game attributes
-
 let score;
 let highScore;
-let lastIndex 
+let lastIndex
 
+// Player Class
 class Player {
     constructor(x, y, r) {
         this.x = x;
@@ -52,12 +59,12 @@ class Player {
     }
 }
 
-class Obstacle {
+class Platform {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.width = obstacleWidth;
-        this.height = obstacleHeight;
+        this.width = platformWidth;
+        this.height = platformHeight;
         this.ySpeed = 3;
         this.visible = true;
         this.moving = false;            // Not used
@@ -69,17 +76,17 @@ class Obstacle {
             this.moving = true;
         } */
         if (this.visible) {
-            c.fillStyle = 'red';
-            c.fillRect(this.x, this.y, this.width, this.height); // Draws the obstacle.
+            c.fillStyle = 'yellow';
+            c.fillRect(this.x, this.y, this.width, this.height); // Draws the platform.
         }
     }
     update() {
-        // Removes the obstacles that are below the player and out of frame
+        // Removes the platforms that are below the player and out of frame
         if (this.y > canvas.height + 150) {
             this.visible = false;
         }
 
-        // If the obstacle is above the player.
+        // If the platform is above the player.
         if (player.y < this.y - 21) {
             this.wasAbove = true;
         }
@@ -87,23 +94,24 @@ class Obstacle {
         // Collision Detection between player and platform
         if (player.x < this.x + this.width && player.x + player.width > this.x && player.y < this.y + this.height && player.y + player.height > this.y && this.wasAbove && this.visible) {
             player.ySpeed = -800;   // The player speed on the y-axis upon collision.
-            console.log(obstacleY);
+            console.log(platformY);
             console.log(player.ySpeed)
+            playSound("playerJump");
         }
 
-        // Auto generates obstacles and additions the level + 1
-        if (player.y < obstacles[obstacles.length -10].y) { // If the player is above the 10th platform from the bottom.
+        // Auto generates platforms and additions the level + 1
+        if (player.y < platforms[platforms.length - 10].y) { // If the player is above the 10th platform from the bottom.
             level++;
-            generateObstacles();
-            console.log("Generate new obstacles", this.ySpeed, "ySpeed")
+            generateplatforms();
+            console.log("Generate new platforms", this.ySpeed, "ySpeed")
         }
         /* let playerIsDead = 0; */
-        /* let playerIsDead =  */ /* console.log(obstacles.lastIndexOf(obstacle => obstacle.visible === false)); // If the player is dead. */
-       
+        /* let playerIsDead =  */ /* console.log(platforms.lastIndexOf(platform => platform.visible === false)); // If the player is dead. */
+
         /* if (playerIsDead) {
             startNewGame();
         } */
-    
+
         /* if (playerIsDead) {
             gameOver();
             console.log("GAME OVER!")
@@ -118,55 +126,144 @@ class Obstacle {
     }
 }
 
+class Enemy {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.r = enemyRadius
+        this.width = enemyWidth;
+        this.height = enemyHeight;
+        this.ySpeed = 3;
+        this.xSpeed = 3;
+        this.visible = true;
+        /* this.moving = true;   */          
+        this.wasAbove = false;
+        this.chance = Math.floor(Math.random() * 10);   // Not used
+    }
+    get moving() {
+        return this.xSpeed || this.ySpeed;
+    }
+    show() {
+        if (this.visible) {
+            c.beginPath();
+            c.arc(this.x + 15, this.y, this.r, 0, (2 * Math.PI), false);    //Draw a circle at the player's position / makes the player a circle.
+            c.fillStyle = "red"; //Kindly green
+            c.closePath();
+            c.fill();
+        }
+    }
+    update() {
+        // Removes the platforms that are below the player and out of frame
+        if (this.y > canvas.height + 250) {
+            this.visible = false;
+        }
+
+        // If the platform is above the player.
+        if (player.y < this.y - 21) {
+            this.wasAbove = true;
+        }
+
+        // Collision Detection between player and platform
+        let playerEnemy = getDistance(this.x, this.y, player.x, player.y)
+
+        if (playerEnemy < this.r + player.r) {
+            gameOver();
+        }
+
+        if(this.moving /* && this.chance === 2 */) {
+            
+            if(this.x > canvas.width - this.width) {
+                this.xSpeed -= 3;
+                console.log("Go left NERD!")
+            } else if (this.x < 0 - this.width) {
+                this.xSpeed = 4;
+            }
+
+            }
+
+        // Auto generates platforms and additions the level + 1
+        if (player.y < enemies[enemies.length - 1].y) { // If the player is above the 10th platform from the bottom.
+            generateEnemies()
+            console.log("Generate new enemies", this.ySpeed, "ySpeed")
+        }
+
+        /* Increases the fall speed/velocity of the player*/
+        this.y -= player.ySpeed * 0.01;
+        /* player.ySpeed += (gravity / (level +1)); */
+
+        score = ((this.y) + 9500).toFixed(0);
+        /* console.log(this.y) */
+        this.x += this.xSpeed;
+    }
+}
+
 // Starts a new game.
 function startNewGame() {
     score = 0;
     level = 0;
-    obstacles = [];
+    platforms = [];
+    enemies = [];
     player = new Player(300, 400, playerRadius); // The start position x-axis, y-axis, and radius size of the player.
-    generateObstacles()
+    generateplatforms()
+    generateEnemies()
     player.xSpeed = 0;
     console.log("NEW GAME!")
 }
 
-// Generates the obstacles.
-function generateObstacles() {
+// Generates the platforms.
+function generateplatforms() {
     if (level === 0) {
-        obstacleY = canvas.height
+        platformY = canvas.height
     } else {
-        obstacleY = obstacles[obstacles.length - 1].y;
+        platformY = platforms[platforms.length - 1].y;
     }
-    const numberOfObstacles = 100;
-    for (let i = 0; i < numberOfObstacles; i++) {
-        let ob = new Obstacle(Math.floor(Math.random() * (canvas.width - obstacleWidth)), obstacleY); // Random x-axis position between 0 and 600.
+    const numberOfplatforms = 100;
+    for (let i = 0; i < numberOfplatforms; i++) {
+        let ob = new Platform(Math.floor(Math.random() * (canvas.width - platformWidth)), platformY); // Random x-axis position between 0 and 600.
         console.log(ob)
-        obstacles.push(ob);
+        platforms.push(ob);
         /* console.log("gen") */
-
-        if (level !== 0) {
-            obstacleY -= 100
-        } else {
-            obstacleY -= 100
-        }
-        /* console.log(obstacleY, "obstacleY") */
+        platformY -= 100;
     }
 
-    obstacles[0].width = 1000;
-    obstacles[0].x = 0;
-    console.log(obstacles)
+    platforms[0].width = 1000;
+    platforms[0].x = 0;
+    console.log(platforms)
+}
+
+// Generates the platforms.
+function generateEnemies() {
+    if (level === 0) {
+        enemyY = canvas.height
+    } else {
+        enemyY = enemies[enemies.length - 1].y;
+    }
+    const numberOfEnemies = 16;
+    for (let i = 0; i < numberOfEnemies; i++) {
+        let en = new Enemy(Math.floor(Math.random() * (canvas.width - enemyWidth)), enemyY); // Random x-axis position between 0 and 600.
+        console.log(en)
+        enemies.push(en);
+        enemyY -= 100 * platforms.length / numberOfEnemies;
+    }
 }
 
 // Updates the game
-function update() { 
+function update() {
     //background
     c.fillStyle = 'lightblue';
     c.fillRect(0, 0, 600, 800);
 
     //player
-    //obstacles
-    for (var i = 0; i < obstacles.length; i++) {
-        obstacles[i].show();
-        obstacles[i].update();
+    //platforms
+
+    for (var i = 0; i < platforms.length; i++) {
+        platforms[i].show();
+        platforms[i].update();
+    }
+
+    for (var i = 0; i < enemies.length; i++) {
+        enemies[i].show();
+        enemies[i].update();
     }
 
     player.show();
@@ -174,8 +271,8 @@ function update() {
 
     player.ySpeed += gravity * 100;
 
-    lastIndex = obstacles.map(obstacle => obstacle.visible).lastIndexOf(false);
-    if (obstacles[lastIndex]?.y < player.y - 500 || obstacles[0].y < player.y - 500) {
+    lastIndex = platforms.map(platforms => platforms.visible).lastIndexOf(false);
+    if (platforms[lastIndex]?.y < player.y - 500 || platforms[0].y < player.y - 500) {
         gameOver()
     }
     console.log(lastIndex, "lastIndex");
@@ -212,12 +309,29 @@ function gameOver() {
 }
 
 function resetGlobalVariables() {
-    obstacles = [];
+    platforms = [];
     gravity = 0.1;
     player.ySpeed = 3;
     player.xSpeed = 0;
     /* player.y = 1000; */
     startNewGame();
+}
+
+function getDistance(x1, y1, x2, y2) {
+    let xDis = x2 - x1;
+    let yDis = y2 - y1;
+    return Math.sqrt(Math.pow(xDis, 2) + Math.pow(yDis, 2));
+}
+
+function playSound(audio) {                                  // Plays sounds based on method call strings
+    const playerJump = "../sounds/SFX_Jump_42.wav";
+    if (audio === "playerJump") {
+        audio = new Audio(playerJump);
+        audio.volume = 0.4;
+    } else if (audio === "chipsReset") {
+
+    }
+    audio.play("");
 }
 
 document.onkeydown = keyDown;
