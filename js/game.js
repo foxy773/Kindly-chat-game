@@ -79,18 +79,22 @@ class Platform {
         this.visible = true;
         this.moving = false;            // Not used
         this.wasAbove = false;
+        this.oneJumpOnly = false;
+        this.broken = false;
         this.chance = Math.floor(Math.random() * 10);   // Not used
     }
     show() {
 
-        
         if (this.chance === 1) {
-            this.moving = true;
+            this.oneJumpOnly = true;
         }
         
-        if (this.visible) {
+        if (this.visible && this.oneJumpOnly === false) {
             // Draws the platform.
             c.fillStyle = 'red';
+            c.fillRect(this.x, this.y, this.width, this.height);
+        } else if (this.visible && this.oneJumpOnly) {
+            c.fillStyle = 'black';
             c.fillRect(this.x, this.y, this.width, this.height);
         }
     }
@@ -106,10 +110,13 @@ class Platform {
         }
 
         // Collision Detection between player and platform
-        if (player.x < this.x + this.width && player.x + player.width > this.x && player.y < this.y + this.height && player.y + player.height > this.y && this.wasAbove && this.visible && player.ySpeed > 0) {
+        if (player.x < this.x + this.width && player.x + player.width > this.x && player.y < this.y + this.height && player.y + player.height > this.y && this.wasAbove && this.visible && player.ySpeed > 0 && this.broken === false) {
             player.ySpeed = -800;   // The player speed on the y-axis upon collision.
             playSound("playerJump");
             updateScore();
+            if (this.oneJumpOnly && this.broken === false) {
+                this.broken = true;
+            }
         }
 
         // Auto generates platforms and additions the level + 1
