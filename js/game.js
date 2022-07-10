@@ -1,5 +1,6 @@
 const canvas = document.getElementById('game');
 const c = canvas.getContext('2d');
+let kindlyFont = new FontFace('IBMPlexSans', 'url("../fonts/IBMPlexSans-Bold.ttf")');
 
 window.onload = function () {
     startNewGame();
@@ -9,7 +10,6 @@ window.onload = function () {
 // Player / Character attributes.
 
 let player;
-let gravity = 0.1;
 let platforms = [];
 let platformY;
 let enemies = [];
@@ -30,7 +30,9 @@ const enemyHeight = enemyRadius * 2;
 const enemyWidth = enemyRadius * 2;
 
 // General game attributes
+let gravity = 0.1;
 let score;
+let lastHeight;
 let highScore;
 let lastIndex
 
@@ -47,8 +49,9 @@ class Player {
     }
 
     show() {
+        //Draw a circle at the player's position / makes the player a circle.
         c.beginPath();
-        c.arc(this.x + 15, this.y, this.r, 0, (2 * Math.PI), false);    //Draw a circle at the player's position / makes the player a circle.
+        c.arc(this.x + 15, this.y, this.r, 0, (2 * Math.PI), false);
         c.fillStyle = "#1cd300"; //Kindly green
         c.closePath();
         c.fill();
@@ -56,6 +59,13 @@ class Player {
 
     update() {
         this.x += this.xSpeed;  //Move the player on the x-axis.
+
+        // When player exits the screen, move them back to the other side of the screen.
+        if (this.x < 0 - this.width) {
+            this.x = canvas.width + this.width
+        } else if (this.x > canvas.width + this.width) {
+            this.x = 0 - this.width
+        }
     }
 }
 
@@ -72,12 +82,16 @@ class Platform {
         this.chance = Math.floor(Math.random() * 10);   // Not used
     }
     show() {
-        /* if (this.chance === 2) {
+
+        
+        if (this.chance === 1) {
             this.moving = true;
-        } */
+        }
+        
         if (this.visible) {
-            c.fillStyle = 'yellow';
-            c.fillRect(this.x, this.y, this.width, this.height); // Draws the platform.
+            // Draws the platform.
+            c.fillStyle = 'red';
+            c.fillRect(this.x, this.y, this.width, this.height);
         }
     }
     update() {
@@ -92,18 +106,17 @@ class Platform {
         }
 
         // Collision Detection between player and platform
-        if (player.x < this.x + this.width && player.x + player.width > this.x && player.y < this.y + this.height && player.y + player.height > this.y && this.wasAbove && this.visible) {
+        if (player.x < this.x + this.width && player.x + player.width > this.x && player.y < this.y + this.height && player.y + player.height > this.y && this.wasAbove && this.visible && player.ySpeed > 0) {
             player.ySpeed = -800;   // The player speed on the y-axis upon collision.
-            console.log(platformY);
-            console.log(player.ySpeed)
             playSound("playerJump");
+            updateScore();
         }
 
         // Auto generates platforms and additions the level + 1
         if (player.y < platforms[platforms.length - 10].y) { // If the player is above the 10th platform from the bottom.
             level++;
             generateplatforms();
-            console.log("Generate new platforms", this.ySpeed, "ySpeed")
+            /*  console.log("Generate new platforms", this.ySpeed, "ySpeed") */
         }
         /* let playerIsDead = 0; */
         /* let playerIsDead =  */ /* console.log(platforms.lastIndexOf(platform => platform.visible === false)); // If the player is dead. */
@@ -120,9 +133,6 @@ class Platform {
         /* Increases the fall speed/velocity of the player*/
         this.y -= player.ySpeed * 0.01;
         /* player.ySpeed += (gravity / (level +1)); */
-
-        score = ((this.y) + 9500).toFixed(0);
-        /* console.log(this.y) */
     }
 }
 
@@ -136,7 +146,7 @@ class Enemy {
         this.ySpeed = 3;
         this.xSpeed = 3;
         this.visible = true;
-        /* this.moving = true;   */          
+        /* this.moving = true;   */
         this.wasAbove = false;
         this.chance = Math.floor(Math.random() * 10);   // Not used
     }
@@ -153,33 +163,31 @@ class Enemy {
         }
     }
     update() {
-        // Removes the platforms that are below the player and out of frame
-        if (this.y > canvas.height + 250) {
+        // Removes the enemies that are below the player and out of frame
+        if (this.y > canvas.height + 200) {
             this.visible = false;
         }
 
-        // If the platform is above the player.
+        // If the enemy is above the player.
         if (player.y < this.y - 21) {
             this.wasAbove = true;
         }
 
-        // Collision Detection between player and platform
+        // Collision Detection between player and enemies
         let playerEnemy = getDistance(this.x, this.y, player.x, player.y)
 
         if (playerEnemy < this.r + player.r) {
             gameOver();
         }
 
-        if(this.moving /* && this.chance === 2 */) {
-            
-            if(this.x > canvas.width - this.width) {
-                this.xSpeed -= 3;
-                console.log("Go left NERD!")
-            } else if (this.x < 0 - this.width) {
-                this.xSpeed = 4;
-            }
+        if (this.moving /* && this.chance === 2 */) {
 
+            if (this.x > canvas.width - this.width) {
+                this.xSpeed -= 3;
+            } else if (this.x < 0) {
+                this.xSpeed = 3;
             }
+        }
 
         // Auto generates platforms and additions the level + 1
         if (player.y < enemies[enemies.length - 1].y) { // If the player is above the 10th platform from the bottom.
@@ -190,8 +198,6 @@ class Enemy {
         /* Increases the fall speed/velocity of the player*/
         this.y -= player.ySpeed * 0.01;
         /* player.ySpeed += (gravity / (level +1)); */
-
-        score = ((this.y) + 9500).toFixed(0);
         /* console.log(this.y) */
         this.x += this.xSpeed;
     }
@@ -200,6 +206,7 @@ class Enemy {
 // Starts a new game.
 function startNewGame() {
     score = 0;
+    lastHeight = 0;
     level = 0;
     platforms = [];
     enemies = [];
@@ -234,9 +241,9 @@ function generateplatforms() {
 // Generates the platforms.
 function generateEnemies() {
     if (level === 0) {
-        enemyY = canvas.height
+        enemyY = canvas.height - 400
     } else {
-        enemyY = enemies[enemies.length - 1].y;
+        enemyY = enemies[enemies.length - 1].y - 400;
     }
     const numberOfEnemies = 16;
     for (let i = 0; i < numberOfEnemies; i++) {
@@ -251,7 +258,7 @@ function generateEnemies() {
 function update() {
     //background
     c.fillStyle = 'lightblue';
-    c.fillRect(0, 0, 600, 800);
+    c.fillRect(0, 0, canvas.width, canvas.height);
 
     //player
     //platforms
@@ -275,8 +282,9 @@ function update() {
     if (platforms[lastIndex]?.y < player.y - 500 || platforms[0].y < player.y - 500) {
         gameOver()
     }
-    console.log(lastIndex, "lastIndex");
+    /* console.log(lastIndex, "lastIndex"); */
     /* console.log(score, "score"); */
+    drawScore();
 }
 
 // Event Listeners
@@ -331,7 +339,23 @@ function playSound(audio) {                                  // Plays sounds bas
     } else if (audio === "chipsReset") {
 
     }
-    audio.play("");
+    /* audio.play(""); */
+}
+
+const updateScore = () => {
+
+    score = platforms.filter(function (platform) {
+        return platform.visible === false;
+    }).length + 2;
+    console.log(score)
+}
+
+function drawScore() {
+
+
+    c.font = "40px IBMPlexSans";
+    c.fillStyle = "black";
+    c.fillText(score, canvas.width / 2, 50);
 }
 
 document.onkeydown = keyDown;
