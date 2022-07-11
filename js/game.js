@@ -28,6 +28,7 @@ const platformWidth = 60;
 const enemyRadius = 20;
 const enemyHeight = enemyRadius * 2;
 const enemyWidth = enemyRadius * 2;
+let enemyDisabled = false;
 
 // General game attributes
 let gravity = 0.1;
@@ -81,20 +82,29 @@ class Platform {
         this.wasAbove = false;
         this.oneJumpOnly = false;
         this.broken = false;
-        this.chance = Math.floor(Math.random() * 10);   // Not used
+        this.hasSpring = false;
+        this.chance = Math.floor(Math.random() * 20);  
     }
     show() {
-
-        if (this.chance === 1) {
+        // 10% chance of a platform being one jump only.
+        if (this.chance >= 0 && this.chance <= 5) {
             this.oneJumpOnly = true;
+        //  5% chance of a platform having a spring.
+        } else if (this.chance === 6) {
+            this.hasSpring = true;
         }
-        
-        if (this.visible && this.oneJumpOnly === false) {
-            // Draws the platform.
+
+        if (this.visible && this.oneJumpOnly === false && this.hasSpring === false) {
+            // Draws the normal platform.
             c.fillStyle = 'red';
             c.fillRect(this.x, this.y, this.width, this.height);
         } else if (this.visible && this.oneJumpOnly) {
+            // Draws the platform that only allows the player to jump once.
             c.fillStyle = 'black';
+            c.fillRect(this.x, this.y, this.width, this.height);
+        } else if (this.visible && this.hasSpring) {
+            // Draws the platform that has a spring.
+            c.fillStyle = 'green';
             c.fillRect(this.x, this.y, this.width, this.height);
         }
     }
@@ -114,9 +124,14 @@ class Platform {
             player.ySpeed = -800;   // The player speed on the y-axis upon collision.
             playSound("playerJump");
             updateScore();
+            enemyDisabled = false;
             if (this.oneJumpOnly && this.broken === false) {
                 this.broken = true;
+            } else if (this.hasSpring) {
+                player.ySpeed = -3000
+                enemyDisabled = true;
             }
+            console.log(enemyDisabled)
         }
 
         // Auto generates platforms and additions the level + 1
@@ -150,6 +165,7 @@ class Enemy {
         this.r = enemyRadius
         this.width = enemyWidth;
         this.height = enemyHeight;
+        this.color = "red"
         this.ySpeed = 3;
         this.xSpeed = 3;
         this.visible = true;
@@ -161,13 +177,25 @@ class Enemy {
         return this.xSpeed || this.ySpeed;
     }
     show() {
-        if (this.visible) {
-            c.beginPath();
+        if (this.visible && enemyDisabled === false) {
+            this.color = "red";
+            console.log("SHow enemy")
+        } else if (enemyDisabled && this.visible) {
+            this.color = "blue"
+        } 
+        c.beginPath();
             c.arc(this.x + 15, this.y, this.r, 0, (2 * Math.PI), false);    //Draw a circle at the player's position / makes the player a circle.
-            c.fillStyle = "red"; //Kindly green
+            c.fillStyle = this.color; //Kindly green
             c.closePath();
             c.fill();
-        }
+
+        /* if (enemyDisabled && this.visible) {
+            this.visible = false;
+        } else if (enemyDisabled === false) {
+            this.visible = true;
+        } */
+            
+        
     }
     update() {
         // Removes the enemies that are below the player and out of frame
@@ -183,8 +211,9 @@ class Enemy {
         // Collision Detection between player and enemies
         let playerEnemy = getDistance(this.x, this.y, player.x, player.y)
 
-        if (playerEnemy < this.r + player.r) {
+        if (playerEnemy < this.r + player.r && this.visible === true && enemyDisabled === false) {
             gameOver();
+            console.log("Died by enemy", this)
         }
 
         if (this.moving /* && this.chance === 2 */) {
@@ -364,6 +393,5 @@ function drawScore() {
     c.fillStyle = "black";
     c.fillText(score, canvas.width / 2, 50);
 }
-
 document.onkeydown = keyDown;
 document.onkeyup = keyUp;
