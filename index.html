@@ -1,21 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Frameout</title>
     <link rel="stylesheet" href="./css/fonts.css">
     <link rel="stylesheet" href="./css/reset.css">
     <link rel="stylesheet" href="./css/variables.css">
     <link rel="stylesheet" href="./css/style.css">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
 </head>
+
 <body>
+    <ul class="kindly-scoreboard" id="kindly-highscore-list"></ul> <!--!!! To remove before release.-->
     <section class="game-window">
-       <!--  <div class="start-game-window"> -->
-       <canvas width="600" height="600" id="game"></canvas>
-<!--     </div> -->
+        <div class="game-window__menu">
+            <div class="menu__title">
+                <p class="title__name">AIRFRAME</p>
+                <p class="title__under-name">THE GAME</p>
+            </div>
+            <div class="menu__selection">
+                <button class="selection__button" id="start-game">START</button>
+                <button class="selection__button" id="show-rules">INSTRUCTIONS</button>
+                <button class="selection__button" id="exit-game">EXIT</button>
+            </div>
+            <ul class="menu__score-board" id="highscore-list">
+                                <!-- <li class="score-board__item">
+                    <span class="score-board__item-name">NAME</span>
+                    <span class="score-board__item-highscore" id="name">10000</span>
+                </li>
+                <li class="score-board__item">
+                    <span class="score-board__item-name">NAME</span>
+                    <span class="score-board__item-highscore" id="name">9821</span>
+                </li> -->
+            </ul>
+        </div>
+        <div class="game-window__game hidden">
+            <canvas class="" width="600" height="600" id="game"></canvas>
+        </div>
+        </div>
     </section>
-    <script src="./js/game.js" defer></script>
+    <script type="module" src="./js/game.js" defer></script>
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.9.0/firebase-app.js";
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCfRkC3oJPhDD0FicbgyjOS4_pzcmbQqdA",
+            databaseURL: "https://kindly-chat-game-default-rtdb.europe-west1.firebasedatabase.app",
+            authDomain: "https://kindly-chat-game-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "kindly-chat-game",
+            storageBucket: "https://kindly-chat-game-default-rtdb.europe-west1.firebasedatabase.app",
+            messagingSenderId: "704477568452",
+            appId: "1:704477568452:web:4f3c60e3414d468ba4d891"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+    </script>
 </body>
+
 </html>
