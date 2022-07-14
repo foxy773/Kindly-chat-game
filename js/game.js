@@ -8,6 +8,7 @@ const gameMenu = document.querySelector('.game-window__menu');
 const gameWindow = document.querySelector('.game-window__game');
 const startGameButton = document.querySelector('#start-game');
 const highscoreList = document.getElementById("highscore-list");
+const changeUsernameButton = document.getElementById("change-username");
 const kindlyHighscoreList = document.getElementById("kindly-highscore-list") // !!! To remove before release.
 
 if (gameWindow.classList.contains('hidden')) {
@@ -576,6 +577,20 @@ async function updateUserHighscore(userToken, highScore, db) {
     }
 }
 
+// Updates the username of a user that exists in the database.
+
+async function updateUsername(userToken, username, db) {
+    try {
+        update(ref(db, 'users/' + userToken), {
+            username: username
+        }).then(() => {
+            console.log("Successfully updated high score!");
+        });
+    } catch (err) {
+        console.log(err, "ERROR! Could not update high score")
+    }
+}
+
 // Gets all the users from the database.
 
 async function getFromDatabase() {
@@ -674,4 +689,18 @@ async function appendHighscores() {
         bestPlayerContainer.appendChild(bestPlayerItem);
     }
 
+    function changeUsername() {
+        const db = getDatabase();
+        if (localStorage.getItem("user") !== null || localStorage.getItem("user") !== undefined) {
+            let newUsername = prompt("Please enter your username");
+            let userToken = localStorage.getItem("user");
+            updateUsername(userToken, newUsername, db)
+        } else {
+            alert("Please refresh the game to change your username");
+        }
+    }
+    changeUsernameButton.addEventListener('click', function () {
+        changeUsername()
+    })
+    
 }
