@@ -1,11 +1,28 @@
+import { getDatabase, ref, set, child, update, remove, get, query, onValue } from "https://www.gstatic.com/firebasejs/9.9.0/firebase-database.js";
+
 const canvas = document.getElementById('game');
 const c = canvas.getContext('2d');
-let kindlyFont = new FontFace('IBMPlexSans', 'url("../fonts/IBMPlexSans-Bold.ttf")');
+const kindlyFont = new FontFace('IBMPlexSans', 'url("../fonts/IBMPlexSans-Bold.ttf")');
+const gameContainer = document.querySelector('.game-window');
+const gameMenu = document.querySelector('.game-window__menu');
+const gameWindow = document.querySelector('.game-window__game');
+const startGameButton = document.querySelector('#start-game');
+const highscoreList = document.getElementById("highscore-list");
+const kindlyHighscoreList = document.getElementById("kindly-highscore-list") // !!! To remove before release.
+
+if (gameWindow.classList.contains('hidden')) {
+    startGameButton.addEventListener('click', function () {
+        gameWindow.classList.remove('hidden');
+        gameMenu.classList.add('hidden');
+        startNewGame();
+        setInterval(updateGame, 10);
+    });
+};
 
 window.onload = function () {
-    startNewGame();
-    setInterval(update, 10);   // Update the game every 10 milliseconds.
+    appendHighscores()
 }
+
 // Global Variables.
 // Player / Character attributes.
 
@@ -14,6 +31,15 @@ let platforms = [];
 let platformY;
 let enemies = [];
 let enemyY;
+let clouds = [];
+const cloudImages = [
+    { image: "../assets/cloud-1.png" },
+    { image: "../assets/cloud-2.png" },
+    { image: "../assets/cloud-3.png" },
+    { image: "../assets/cloud-4.png" },
+    { image: "../assets/cloud-5.png" }
+];
+let cloudX;
 let level;
 
 const playerRadius = 20;
@@ -30,12 +56,57 @@ const enemyHeight = enemyRadius * 2;
 const enemyWidth = enemyRadius * 2;
 let enemyDisabled = false;
 
+// Clouds / Cloud attributes
+const cloudHeight = 100;
+const cloudWidth = 200;
+const cloudMinSpeed = 1;
+const cloudMaxSpeed = 1.2;
+
 // General game attributes
 let gravity = 0.1;
 let score;
 let lastHeight;
-let highScore;
-let lastIndex
+let highScore = 0;
+let lastIndex;
+let highscores
+
+function generateBackground() {
+    generateClouds();
+}
+
+class Cloud {
+    constructor(x, y, width, height, xSpeed, cloudImage) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.ySpeed = 1;
+        this.xSpeed = xSpeed;
+        this.visible = true;
+        this.moving = true;            // Not used
+        this.wasAbove = false;
+        this.oneJumpOnly = false;
+        this.broken = false;
+        this.hasSpring = false;
+        this.chance = Math.floor(Math.random() * 20);
+        this.cloudImage = cloudImage;
+    }
+    show() {
+        let cloudImage = new Image();
+        cloudImage.src = this.cloudImage.image;
+
+        c.drawImage(cloudImage, this.x, this.y);
+
+    }
+    update() {
+        this.x -= this.xSpeed;
+        if (clouds.every(cloud => cloud.x < -100)) {
+            this.x = canvas.width + 100;
+        }
+
+
+    }
+}
 
 // Player Class
 class Player {
@@ -83,13 +154,13 @@ class Platform {
         this.oneJumpOnly = false;
         this.broken = false;
         this.hasSpring = false;
-        this.chance = Math.floor(Math.random() * 20);  
+        this.chance = Math.floor(Math.random() * 20);
     }
     show() {
         // 10% chance of a platform being one jump only.
         if (this.chance >= 0 && this.chance <= 5) {
             this.oneJumpOnly = true;
-        //  5% chance of a platform having a spring.
+            //  5% chance of a platform having a spring.
         } else if (this.chance === 6) {
             this.hasSpring = true;
         }
@@ -110,7 +181,7 @@ class Platform {
     }
     update() {
         // Removes the platforms that are below the player and out of frame
-        if (this.y > canvas.height + 150) {
+        if (this.y > canvas.height + 50) {
             this.visible = false;
         }
 
@@ -121,7 +192,7 @@ class Platform {
 
         // Collision Detection between player and platform
         if (player.x < this.x + this.width && player.x + player.width > this.x && player.y < this.y + this.height && player.y + player.height > this.y && this.wasAbove && this.visible && player.ySpeed > 0 && this.broken === false) {
-            player.ySpeed = -800;   // The player speed on the y-axis upon collision.
+            player.ySpeed = -700;   // The player speed on the y-axis upon collision.
             playSound("playerJump");
             updateScore();
             enemyDisabled = false;
@@ -131,7 +202,6 @@ class Platform {
                 player.ySpeed = -3000
                 enemyDisabled = true;
             }
-            console.log(enemyDisabled)
         }
 
         // Auto generates platforms and additions the level + 1
@@ -179,23 +249,22 @@ class Enemy {
     show() {
         if (this.visible && enemyDisabled === false) {
             this.color = "red";
-            console.log("SHow enemy")
         } else if (enemyDisabled && this.visible) {
             this.color = "blue"
-        } 
+        }
         c.beginPath();
-            c.arc(this.x + 15, this.y, this.r, 0, (2 * Math.PI), false);    //Draw a circle at the player's position / makes the player a circle.
-            c.fillStyle = this.color; //Kindly green
-            c.closePath();
-            c.fill();
+        c.arc(this.x + 15, this.y, this.r, 0, (2 * Math.PI), false);    //Draw a circle at the player's position / makes the player a circle.
+        c.fillStyle = this.color; //Kindly green
+        c.closePath();
+        c.fill();
 
         /* if (enemyDisabled && this.visible) {
             this.visible = false;
         } else if (enemyDisabled === false) {
             this.visible = true;
         } */
-            
-        
+
+
     }
     update() {
         // Removes the enemies that are below the player and out of frame
@@ -228,27 +297,28 @@ class Enemy {
         // Auto generates platforms and additions the level + 1
         if (player.y < enemies[enemies.length - 1].y) { // If the player is above the 10th platform from the bottom.
             generateEnemies()
-            console.log("Generate new enemies", this.ySpeed, "ySpeed")
         }
 
         /* Increases the fall speed/velocity of the player*/
         this.y -= player.ySpeed * 0.01;
         /* player.ySpeed += (gravity / (level +1)); */
-        /* console.log(this.y) */
         this.x += this.xSpeed;
     }
 }
 
 // Starts a new game.
 function startNewGame() {
+    findUser();
+    appendHighscores()
     score = 0;
     lastHeight = 0;
     level = 0;
     platforms = [];
     enemies = [];
     player = new Player(300, 400, playerRadius); // The start position x-axis, y-axis, and radius size of the player.
-    generateplatforms()
-    generateEnemies()
+    generateBackground();
+    generateplatforms();
+    generateEnemies();
     player.xSpeed = 0;
     console.log("NEW GAME!")
 }
@@ -263,15 +333,12 @@ function generateplatforms() {
     const numberOfplatforms = 100;
     for (let i = 0; i < numberOfplatforms; i++) {
         let ob = new Platform(Math.floor(Math.random() * (canvas.width - platformWidth)), platformY); // Random x-axis position between 0 and 600.
-        console.log(ob)
         platforms.push(ob);
-        /* console.log("gen") */
         platformY -= 100;
     }
 
     platforms[0].width = 1000;
     platforms[0].x = 0;
-    console.log(platforms)
 }
 
 // Generates the platforms.
@@ -284,20 +351,37 @@ function generateEnemies() {
     const numberOfEnemies = 16;
     for (let i = 0; i < numberOfEnemies; i++) {
         let en = new Enemy(Math.floor(Math.random() * (canvas.width - enemyWidth)), enemyY); // Random x-axis position between 0 and 600.
-        console.log(en)
         enemies.push(en);
         enemyY -= 100 * platforms.length / numberOfEnemies;
     }
 }
 
+function generateClouds() {
+    if (level === 0) {
+        cloudX = canvas.width + 50
+    } else {
+        cloudX = canvas[clouds.length - 1].x + 50;
+    }
+    const numberOfClouds = 20;
+    for (let i = 0; i < numberOfClouds; i++) {
+        let cl = new Cloud(getRandomNumber(canvas.width - 500, canvas.width + 5000), getRandomNumber(0 - canvas.height, canvas.height + 300), cloudHeight, cloudWidth, getRandomNumber(cloudMinSpeed, cloudMaxSpeed), cloudImages[getRandomNumber(0, cloudImages.length - 1)]); // Random x-axis position between 0 and 600.
+        clouds.push(cl);
+    }
+}
+
 // Updates the game
-function update() {
+function updateGame() {
     //background
     c.fillStyle = 'lightblue';
     c.fillRect(0, 0, canvas.width, canvas.height);
 
     //player
     //platforms
+
+    for (var i = 0; i < clouds.length; i++) {
+        clouds[i].show();
+        clouds[i].update();
+    }
 
     for (var i = 0; i < platforms.length; i++) {
         platforms[i].show();
@@ -320,40 +404,42 @@ function update() {
     }
     /* console.log(lastIndex, "lastIndex"); */
     /* console.log(score, "score"); */
-    drawScore();
+    drawScores();
 }
 
 // Event Listeners
 
 // If the button is pressed the player will move on the x-axis with the direction chosen.
 function keyDown(e) {
-    if (e.keyCode === 39) { // Right arrow key
+    if (e.keyCode === 39 || e.keyCode === 68) { // Right arrow key, or D key
         player.xSpeed = 5
-    }
-    if (e.keyCode === 37) { // Left arrow key
+
+    } else if (e.keyCode === 37 || e.keyCode === 65) { // Left arrow key, or A key
         player.xSpeed = -5;
     }
 }
 
 // If the button is let go the x-axis speed of the player will halt.
 function keyUp(e) {
-    if (e.keyCode === 39) { // Right arrow key
-        player.xSpeed = 0;
-    }
-    if (e.keyCode === 37) { // Left arrow key
+    if (e.keyCode === 39 || e.keyCode === 37 || e.keyCode === 68 || e.keyCode === 65) { // Left arrow key, Right arrow key, A key, D key
         player.xSpeed = 0;
     }
 }
 
-let gameEnded = false;
 function gameOver() {
+    if (highScore < score || highScore === undefined) {
+        highScore = score;
+        registerNewHighScore(highScore);
+    }
+
     resetGlobalVariables();
     console.log("GAME OVER!")
-    /* gameEnded = true; */
 }
 
 function resetGlobalVariables() {
     platforms = [];
+    enemies = [];
+    clouds = [];
     gravity = 0.1;
     player.ySpeed = 3;
     player.xSpeed = 0;
@@ -375,23 +461,186 @@ function playSound(audio) {                                  // Plays sounds bas
     } else if (audio === "chipsReset") {
 
     }
-    /* audio.play(""); */
+    audio.play("");
 }
 
 const updateScore = () => {
-
     score = platforms.filter(function (platform) {
         return platform.visible === false;
     }).length + 2;
     console.log(score)
 }
 
-function drawScore() {
-
-
-    c.font = "40px IBMPlexSans";
-    c.fillStyle = "black";
+function drawScores() {
+    //  Score
+    c.font = "60px IBMPlexSans-Bold";
+    c.fillStyle = "orange";
+    c.textAlign = "center";
+    c.lineWidth = 4;
     c.fillText(score, canvas.width / 2, 50);
+    c.strokeText(score, canvas.width / 2, 50);
+    //  HighScore
+    c.font = "30px IBMPlexSans-Bold";
+    c.fillStyle = "yellow";
+    c.textAlign = "center";
+    c.lineWidth = 2;
+    c.fillText(highScore, canvas.width / 2, 100);
+    c.strokeText(highScore, canvas.width / 2, 100);
 }
 document.onkeydown = keyDown;
 document.onkeyup = keyUp;
+
+// Gets a random number to be used to make an uid for each user.
+
+function getRandomNumber(min, max) {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
+const rand = () => Math.random(0).toString(36).substr(2);
+const token = (length) => (rand() + rand() + rand() + rand()).substr(0, length);
+
+async function registerNewHighScore(highScore) {
+    const db = getDatabase();
+    const newToken = token(32);
+
+    if (localStorage.getItem("user") === null) {
+        localStorage.setItem("user", newToken);
+        registerNewUser(newToken, db);
+    } else{
+        updateUserHighscore(localStorage.getItem("user"), highScore, db);
+        console.log("updated")
+    }
+}
+
+// Registers a new user in the database with the highscore they have.
+
+async function registerNewUser(newToken, db) {
+    const username = prompt("Please enter your username", "");
+    if (username === undefined) {
+        alert("Didn't enter a username");
+    } else {
+        try {
+            set(ref(db, 'users/' + newToken), {
+                username: username,
+                highScore: highScore
+            }).then(() => {
+                console.log("Successfully registered new high score!");
+            });
+        } catch (err) {
+            console.log(err, "ERROR! Could not register new high score")
+        }
+    }
+};
+
+// Updates the highscore of a user that exists in the database.
+
+async function updateUserHighscore(userToken, highScore, db) {
+    try {
+        update(ref(db, 'users/' + userToken), {
+            highScore: highScore
+        }).then(() => {
+            console.log("Successfully updated high score!");
+        });
+    } catch (err) {
+        console.log(err, "ERROR! Could not update high score")
+    }
+}
+
+// Gets all the users from the database.
+
+async function getFromDatabase() {
+        const db = getDatabase();
+
+        try {
+            const users = await get(ref(db, 'users'))
+            const highscoresfromDB = users.val();
+
+            const scores = Object.entries(highscoresfromDB).map(function ([key, value]) {
+                return {
+                    ...value,
+                    id: key,
+                }
+            });
+            console.log(scores)
+            scores.sort(function (a, b) {
+                let keyA = a.highScore
+                let keyB = b.highScore
+                // Compare the 2 dates
+                if (keyA > keyB) return -1;
+                if (keyA < keyB) return 1;
+                return 0;
+            });
+            console.log(scores)
+            return scores
+
+        } catch (err) {
+            console.log(err, "ERROR! Could not get highscores")
+        }
+    }
+
+// Checks if the user already exists in the database
+
+async function findUser() {
+    let userStoredHighscore;
+    const userToken = localStorage.getItem("user");
+    const storedHighscores = await getFromDatabase();
+    if (storedHighscores === undefined) {
+        console.log("No highscores found")
+        highScore = 0;
+    } else {
+        userStoredHighscore = storedHighscores.find(user => user.id === userToken);
+        highScore = userStoredHighscore.highScore;
+
+    }
+}
+
+async function appendHighscores() {
+    const appendableHighscores = await getFromDatabase() || undefined;
+    highscoreList.innerHTML = "";
+    kindlyHighscoreList.innerHTML = "";
+    if (appendableHighscores === undefined) {
+
+    } else {
+        appendableHighscores.forEach(user => {
+            const userToken = localStorage.getItem("user");
+            // Create a new list item with a text node
+            const highscoreItem = document.createElement("li");
+            const highscoreName = document.createElement("span");
+            const highscoreScore = document.createElement("span");
+    
+            highscoreItem.classList.add("score-board__item");
+            highscoreName.classList.add("score-board__item-name");
+            highscoreScore.classList.add("score-board__item-highscore");
+    
+            highscoreName.innerHTML = user.username;
+            highscoreScore.innerHTML = user.highScore;
+
+            if (user.id === userToken) {
+                highscoreName.innerHTML = `(You) ${user.username}`;
+            } else {
+                highscoreName.innerHTML = user.username;
+            }
+    
+            highscoreItem.appendChild(highscoreName);
+            highscoreItem.appendChild(highscoreScore);
+            highscoreList.appendChild(highscoreItem);
+            kindlyHighscoreList.appendChild(highscoreItem.cloneNode(true)); // !!! To remove before release.
+        });
+        const bestPlayerImage = document.createElement("img");
+        const bestPlayerContainer = document.getElementById("best-player-container");
+        const bestPlayerItem = document.createElement("p");
+
+        bestPlayerContainer.innerHTML = "";
+        bestPlayerImage.src = "/assets/star.png";
+        bestPlayerImage.classList.add("top-player__star");
+
+        const bestUser = appendableHighscores[0].username;
+        const bestScore = appendableHighscores[0].highScore;
+
+        bestPlayerItem.innerHTML = bestUser;
+
+        bestPlayerContainer.appendChild(bestPlayerImage);
+        bestPlayerContainer.appendChild(bestPlayerItem);
+    }
+    
+}
