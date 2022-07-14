@@ -517,12 +517,18 @@ async function registerNewHighScore(highScore) {
 async function registerNewUser(newToken, db) {
     const username = prompt("Please enter your username");
     let newUsername
-    if (username.length > 10) {
+
+    if (username === undefined || username === null) {
+        newUsername = "Anonymous";
+    } else if (username.length > 10) {
         newUsername = username.slice(0, 10);
+    } else if (username.length < 1) {
+        newUsername = "Anonymous";
     }
+
     try {
         set(ref(db, 'users/' + newToken), {
-            username: newUsername|| username || "Anonymous",
+            username: newUsername || username || "Anonymous",
             highScore: highScore
         }).then(() => {
             console.log("Successfully registered new high score!");
@@ -588,9 +594,10 @@ async function findUser() {
         console.log("No highscores found")
         highScore = 0;
     } else {
-        userStoredHighscore = storedHighscores.find(user => user.id === userToken);
-        highScore = userStoredHighscore.highScore;
-
+        if (userStoredHighscore = storedHighscores.find(user => user.id === userToken)) {
+            userStoredHighscore = storedHighscores.find(user => user.id === userToken);
+            highScore = userStoredHighscore.highScore
+        }
     }
 }
 
