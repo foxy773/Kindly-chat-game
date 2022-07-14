@@ -2,9 +2,16 @@
 	/* Kindly primary colors */
 	--blue-ribbon: #0069FF;
 	--green-harlequin:#1CD300;
-	--white: white;
-	--black: black;
+	--yellow-sunglow: #FFCa3A;
+	--white: WHITE;
+	--black: BLACK;
+	--game-menu-background : #313131;
 	
-	--font-family: "Arial";
+	--font-family: "IBMPlexSans-Regular";
 	--font-size: 20px;
+
+	--border-radius-container: 1rem;
+	--border-radius-button: 1rem;
+	--border-radius-input: 1rem;
+	--border-radius-textarea: 1rem;
 }
