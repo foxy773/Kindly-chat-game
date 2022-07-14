@@ -506,7 +506,7 @@ async function registerNewHighScore(highScore) {
     if (localStorage.getItem("user") === null) {
         localStorage.setItem("user", newToken);
         registerNewUser(newToken, db);
-    } else{
+    } else {
         updateUserHighscore(localStorage.getItem("user"), highScore, db);
         console.log("updated")
     }
@@ -515,22 +515,22 @@ async function registerNewHighScore(highScore) {
 // Registers a new user in the database with the highscore they have.
 
 async function registerNewUser(newToken, db) {
-    const username = prompt("Please enter your username", "");
-    if (username === undefined) {
-        alert("Didn't enter a username");
-    } else {
-        try {
-            set(ref(db, 'users/' + newToken), {
-                username: username,
-                highScore: highScore
-            }).then(() => {
-                console.log("Successfully registered new high score!");
-            });
-        } catch (err) {
-            console.log(err, "ERROR! Could not register new high score")
-        }
+    const username = prompt("Please enter your username");
+    let newUsername
+    if (username.length > 10) {
+        newUsername = username.slice(0, 10);
     }
-};
+    try {
+        set(ref(db, 'users/' + newToken), {
+            username: newUsername|| username || "Anonymous",
+            highScore: highScore
+        }).then(() => {
+            console.log("Successfully registered new high score!");
+        });
+    } catch (err) {
+        console.log(err, "ERROR! Could not register new high score")
+    }
+}
 
 // Updates the highscore of a user that exists in the database.
 
@@ -549,34 +549,34 @@ async function updateUserHighscore(userToken, highScore, db) {
 // Gets all the users from the database.
 
 async function getFromDatabase() {
-        const db = getDatabase();
+    const db = getDatabase();
 
-        try {
-            const users = await get(ref(db, 'users'))
-            const highscoresfromDB = users.val();
+    try {
+        const users = await get(ref(db, 'users'))
+        const highscoresfromDB = users.val();
 
-            const scores = Object.entries(highscoresfromDB).map(function ([key, value]) {
-                return {
-                    ...value,
-                    id: key,
-                }
-            });
-            console.log(scores)
-            scores.sort(function (a, b) {
-                let keyA = a.highScore
-                let keyB = b.highScore
-                // Compare the 2 dates
-                if (keyA > keyB) return -1;
-                if (keyA < keyB) return 1;
-                return 0;
-            });
-            console.log(scores)
-            return scores
+        const scores = Object.entries(highscoresfromDB).map(function ([key, value]) {
+            return {
+                ...value,
+                id: key,
+            }
+        });
+        console.log(scores)
+        scores.sort(function (a, b) {
+            let keyA = a.highScore
+            let keyB = b.highScore
+            // Compare the 2 dates
+            if (keyA > keyB) return -1;
+            if (keyA < keyB) return 1;
+            return 0;
+        });
+        console.log(scores)
+        return scores
 
-        } catch (err) {
-            console.log(err, "ERROR! Could not get highscores")
-        }
+    } catch (err) {
+        console.log(err, "ERROR! Could not get highscores")
     }
+}
 
 // Checks if the user already exists in the database
 
@@ -607,20 +607,20 @@ async function appendHighscores() {
             const highscoreItem = document.createElement("li");
             const highscoreName = document.createElement("span");
             const highscoreScore = document.createElement("span");
-    
+
             highscoreItem.classList.add("score-board__item");
             highscoreName.classList.add("score-board__item-name");
             highscoreScore.classList.add("score-board__item-highscore");
-    
+
             highscoreName.innerHTML = user.username;
             highscoreScore.innerHTML = user.highScore;
 
             if (user.id === userToken) {
-                highscoreName.innerHTML = `(You) ${user.username}`;
+                highscoreName.innerHTML = `(You) ${user.username}` + ":";
             } else {
-                highscoreName.innerHTML = user.username;
+                highscoreName.innerHTML = `${user.username}` + ":";;
             }
-    
+
             highscoreItem.appendChild(highscoreName);
             highscoreItem.appendChild(highscoreScore);
             highscoreList.appendChild(highscoreItem);
@@ -637,10 +637,8 @@ async function appendHighscores() {
         const bestUser = appendableHighscores[0].username;
         const bestScore = appendableHighscores[0].highScore;
 
-        bestPlayerItem.innerHTML = `${bestUser}-`;
-
         bestPlayerContainer.appendChild(bestPlayerImage);
         bestPlayerContainer.appendChild(bestPlayerItem);
     }
-    
+
 }
