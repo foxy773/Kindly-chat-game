@@ -638,7 +638,7 @@ async function appendHighscores() {
         const bestPlayerItem = document.createElement("p");
 
         bestPlayerContainer.innerHTML = "";
-        bestPlayerImage.src = "./../assets/star.png";
+        bestPlayerImage.src = "../assets/star.png";
         bestPlayerImage.classList.add("top-player__star");
 
         const bestUser = appendableHighscores[0].username;
