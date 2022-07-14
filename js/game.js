@@ -251,10 +251,12 @@ class Enemy {
             this.color = "red";
         } else if (enemyDisabled && this.visible) {
             this.color = "blue"
+        } else if (this.visible === false) {
+            this.color = "black"
         }
         c.beginPath();
         c.arc(this.x + 15, this.y, this.r, 0, (2 * Math.PI), false);    //Draw a circle at the player's position / makes the player a circle.
-        c.fillStyle = this.color; //Kindly green
+        c.fillStyle = this.color;
         c.closePath();
         c.fill();
 
@@ -426,6 +428,27 @@ function keyUp(e) {
     }
 }
 
+const mobileTouchLeft = document.getElementById("mobile-touch-left");
+const mobileTouchRight = document.getElementById("mobile-touch-right");
+
+mobileTouchLeft.addEventListener("touchstart", function () {
+    player.xSpeed = -5;
+})
+
+mobileTouchLeft.addEventListener("touchend", function () {
+    player.xSpeed = 0;
+})
+
+mobileTouchRight.addEventListener("touchstart", function () {
+    player.xSpeed = 5;
+})
+
+mobileTouchRight.addEventListener("touchend", function () {
+    player.xSpeed = 0;
+})
+
+
+
 function gameOver() {
     if (highScore < score || highScore === undefined) {
         highScore = score;
@@ -437,6 +460,7 @@ function gameOver() {
 }
 
 function resetGlobalVariables() {
+    enemyDisabled = false;
     platforms = [];
     enemies = [];
     clouds = [];
