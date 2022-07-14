@@ -668,6 +668,8 @@ async function appendHighscores() {
         const bestUser = appendableHighscores[0].username;
         const bestScore = appendableHighscores[0].highScore;
 
+        bestPlayerItem.innerHTML = bestUser;
+
         bestPlayerContainer.appendChild(bestPlayerImage);
         bestPlayerContainer.appendChild(bestPlayerItem);
     }
