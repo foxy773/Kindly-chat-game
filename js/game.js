@@ -1,5 +1,24 @@
 import { getDatabase, ref, set, child, update, remove, get, query, onValue } from "https://www.gstatic.com/firebasejs/9.9.0/firebase-database.js";
 
+function createImage(path){
+    let image = new Image();
+    image.src = path;
+    return image;
+  }
+
+const images = {
+    clouds: [
+        createImage('../assets/cloud-1.png'),
+        createImage('../assets/cloud-2.png'),
+        createImage('../assets/cloud-3.png'),
+        createImage('../assets/cloud-4.png'),
+        createImage('../assets/cloud-5.png')
+    ]
+
+};
+
+
+
 const canvas = document.getElementById('game');
 const c = canvas.getContext('2d');
 const kindlyFont = new FontFace('IBMPlexSans', 'url("../fonts/IBMPlexSans-Bold.ttf")');
@@ -15,8 +34,9 @@ if (gameWindow.classList.contains('hidden')) {
     startGameButton.addEventListener('click', function () {
         gameWindow.classList.remove('hidden');
         gameMenu.classList.add('hidden');
+        window.requestAnimationFrame(updateGame);
+
         startNewGame();
-        setInterval(updateGame, 10);
     });
 };
 
@@ -33,13 +53,6 @@ let platformY;
 let enemies = [];
 let enemyY;
 let clouds = [];
-const cloudImages = [
-    { image: "../assets/cloud-1.png" },
-    { image: "../assets/cloud-2.png" },
-    { image: "../assets/cloud-3.png" },
-    { image: "../assets/cloud-4.png" },
-    { image: "../assets/cloud-5.png" }
-];
 let cloudX;
 let level;
 
@@ -64,19 +77,38 @@ const cloudMinSpeed = 1;
 const cloudMaxSpeed = 1.2;
 
 // General game attributes
+let lastTime
+
 let gravity = 0.1;
 let score;
 let lastHeight;
 let highScore = 0;
 let lastIndex;
 let highscores
+let assetLoadCount
+
+/* function assetsLoaded() {
+    assetLoadCount++
+    updateGame()
+} */
 
 function generateBackground() {
     generateClouds();
 }
 
+/* function loadImage(image, cloudImage) {
+    cloudImage.onload = function() {
+        c.drawImage(image, this.x, this.y);
+        console.log("finish loading");
+    };      
+    console.log(image,"test")  
+    cloudImage.src = image;
+    
+  } */
+
+
 class Cloud {
-    constructor(x, y, width, height, xSpeed, cloudImage) {
+    constructor(x, y, width, height, xSpeed, image) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -90,13 +122,51 @@ class Cloud {
         this.broken = false;
         this.hasSpring = false;
         this.chance = Math.floor(Math.random() * 20);
-        this.cloudImage = cloudImage;
+        this.image = image;
+        this.shouldUpdateCloud = true;
     }
     show() {
-        let cloudImage = new Image();
-        cloudImage.src = this.cloudImage.image;
+        /*         c.drawImage(cloudImage, this.x, this.y); */
+       /*  cloudImage.onload = function () { */
+       /* cloudImage.src = this.image; */
+            c.drawImage(this.image, this.x, this.y);
+          /*   console.log("finish loading");
+        }; */
+      
 
-        c.drawImage(cloudImage, this.x, this.y);
+        /* cloudImage.onload = function () {
+            this.shouldUpdateCloud = true;
+            console.log("🚀 ~ file: game.js ~ line 113 ~ Cloud ~ show ~ this.shouldUpdateCloud", this.shouldUpdateCloud)
+        } */
+
+        /* const render = () => {
+            if(this.shouldUpdateCloud){ 
+                this.shouldUpdateCloud = false; */
+        /* cloudImage.onload = function () {
+            console.log("cloud load")
+            
+            
+        }
+        cloudImage.src = this.cloudImage.image; */
+
+        /* cloudImage.onload = function(){
+            c.drawImage(cloudImage, this.x, this.y);
+        }; */
+
+
+
+        /*  }
+     } */
+
+        /*   if(this.shouldUpdateCloud) cloudImage.src = this.cloudImage.image; */
+
+        /* render(); */
+
+        /* cloudImage.onload = function() {
+            c.drawImage(cloudImage, this.x, this.y);
+            console.log("could draw image")
+        } */
+
 
     }
     update() {
@@ -104,8 +174,6 @@ class Cloud {
         if (clouds.every(cloud => cloud.x < -100)) {
             this.x = canvas.width + 100;
         }
-
-
     }
 }
 
@@ -158,7 +226,7 @@ class Platform {
         this.chance = Math.floor(Math.random() * 20);
     }
     show() {
-        // 10% chance of a platform being one jump only.
+        // 25% chance of a platform being one jump only.
         if (this.chance >= 0 && this.chance <= 5) {
             this.oneJumpOnly = true;
             //  5% chance of a platform having a spring.
@@ -224,7 +292,7 @@ class Platform {
         } */
 
         /* Increases the fall speed/velocity of the player*/
-        this.y -= player.ySpeed * 0.01;
+        this.y -= player.ySpeed * 0.02;
         /* player.ySpeed += (gravity / (level +1)); */
     }
 }
@@ -237,8 +305,8 @@ class Enemy {
         this.width = enemyWidth;
         this.height = enemyHeight;
         this.color = "red"
-        this.ySpeed = 3;
-        this.xSpeed = 3;
+        this.ySpeed = 1;
+        this.xSpeed = 6;
         this.visible = true;
         /* this.moving = true;   */
         this.wasAbove = false;
@@ -291,9 +359,9 @@ class Enemy {
         if (this.moving /* && this.chance === 2 */) {
 
             if (this.x > canvas.width - this.width) {
-                this.xSpeed -= 3;
+                this.xSpeed -= 6;
             } else if (this.x < 0) {
-                this.xSpeed = 3;
+                this.xSpeed = 6;
             }
         }
 
@@ -303,7 +371,7 @@ class Enemy {
         }
 
         /* Increases the fall speed/velocity of the player*/
-        this.y -= player.ySpeed * 0.01;
+        this.y -= player.ySpeed * 0.02;
         /* player.ySpeed += (gravity / (level +1)); */
         this.x += this.xSpeed;
     }
@@ -367,13 +435,16 @@ function generateClouds() {
     }
     const numberOfClouds = 20;
     for (let i = 0; i < numberOfClouds; i++) {
-        let cl = new Cloud(getRandomNumber(canvas.width - 500, canvas.width + 5000), getRandomNumber(0 - canvas.height, canvas.height + 300), cloudHeight, cloudWidth, getRandomNumber(cloudMinSpeed, cloudMaxSpeed), cloudImages[getRandomNumber(0, cloudImages.length - 1)]); // Random x-axis position between 0 and 600.
-        clouds.push(cl);
+            let cl = new Cloud(getRandomNumber(canvas.width - 500, canvas.width + 5000), getRandomNumber(0 - canvas.height, canvas.height + 300), cloudHeight, cloudWidth, getRandomNumber(cloudMinSpeed, cloudMaxSpeed), images.clouds[getRandomNumber(0, images.clouds.length - 1)]); // Random x-axis position between 0 and 600.
+            clouds.push(cl);
+        
+        
     }
 }
 
 // Updates the game
-function updateGame() {
+function updateGame(time) {
+
     //background
     c.fillStyle = 'lightblue';
     c.fillRect(0, 0, canvas.width, canvas.height);
@@ -408,17 +479,29 @@ function updateGame() {
     /* console.log(lastIndex, "lastIndex"); */
     /* console.log(score, "score"); */
     drawScores();
+
+    if (lastTime == null) {
+        window.requestAnimationFrame(updateGame)
+        return;
+    }
+
+    const delta = time - lastTime
+    console.log(delta, "DELTA!")
+
+    lastTime = time
+    window.requestAnimationFrame(updateGame);
 }
+window.requestAnimationFrame(updateGame);
 
 // Event Listeners
 
 // If the button is pressed the player will move on the x-axis with the direction chosen.
 function keyDown(e) {
     if (e.keyCode === 39 || e.keyCode === 68) { // Right arrow key, or D key
-        player.xSpeed = 5
+        player.xSpeed = 6
 
     } else if (e.keyCode === 37 || e.keyCode === 65) { // Left arrow key, or A key
-        player.xSpeed = -5;
+        player.xSpeed = -6;
     }
 }
 
@@ -433,15 +516,15 @@ const mobileTouchLeft = document.getElementById("mobile-touch-left");
 const mobileTouchRight = document.getElementById("mobile-touch-right");
 
 mobileTouchLeft.addEventListener("touchstart", function () {
-    player.xSpeed = -5;
+    player.xSpeed = -6;
 })
 
 mobileTouchLeft.addEventListener("touchend", function () {
-    player.xSpeed = 0;
+    player.xSpeed = 6;
 })
 
 mobileTouchRight.addEventListener("touchstart", function () {
-    player.xSpeed = 5;
+    player.xSpeed = 6;
 })
 
 mobileTouchRight.addEventListener("touchend", function () {
@@ -702,5 +785,5 @@ async function appendHighscores() {
     changeUsernameButton.addEventListener('click', function () {
         changeUsername()
     })
-    
+
 }
