@@ -13,11 +13,15 @@ const images = {
         createImage('../assets/cloud-3.png'),
         createImage('../assets/cloud-4.png'),
         createImage('../assets/cloud-5.png')
-    ]
+    ],
+    platforms: [
+        createImage('../assets/platform-normal-1.png'),
+        createImage('../assets/platform-oneJump-1.png'),
+        createImage('../assets/platform-spring-1.png'),
+        createImage('../assets/platform-broken-1.png'),
+    ],
 
 };
-
-
 
 const canvas = document.getElementById('game');
 const c = canvas.getContext('2d');
@@ -61,7 +65,7 @@ const playerHeight = playerRadius;
 const playerWidth = playerRadius + 10;
 
 // platform / Platform attributes
-const platformHeight = 10;
+const platformHeight = 15;
 const platformWidth = 60;
 
 // Enemies / Enemy attributes
@@ -126,52 +130,11 @@ class Cloud {
         this.shouldUpdateCloud = true;
     }
     show() {
-        /*         c.drawImage(cloudImage, this.x, this.y); */
-       /*  cloudImage.onload = function () { */
-       /* cloudImage.src = this.image; */
             c.drawImage(this.image, this.x, this.y);
-          /*   console.log("finish loading");
-        }; */
-      
-
-        /* cloudImage.onload = function () {
-            this.shouldUpdateCloud = true;
-            console.log("🚀 ~ file: game.js ~ line 113 ~ Cloud ~ show ~ this.shouldUpdateCloud", this.shouldUpdateCloud)
-        } */
-
-        /* const render = () => {
-            if(this.shouldUpdateCloud){ 
-                this.shouldUpdateCloud = false; */
-        /* cloudImage.onload = function () {
-            console.log("cloud load")
-            
-            
-        }
-        cloudImage.src = this.cloudImage.image; */
-
-        /* cloudImage.onload = function(){
-            c.drawImage(cloudImage, this.x, this.y);
-        }; */
-
-
-
-        /*  }
-     } */
-
-        /*   if(this.shouldUpdateCloud) cloudImage.src = this.cloudImage.image; */
-
-        /* render(); */
-
-        /* cloudImage.onload = function() {
-            c.drawImage(cloudImage, this.x, this.y);
-            console.log("could draw image")
-        } */
-
-
     }
     update() {
         this.x -= this.xSpeed;
-        if (clouds.every(cloud => cloud.x < -100)) {
+        if (clouds.every(cloud => cloud.x < -400)) {
             this.x = canvas.width + 100;
         }
     }
@@ -211,7 +174,7 @@ class Player {
 }
 
 class Platform {
-    constructor(x, y) {
+    constructor(x, y, image) {
         this.x = x;
         this.y = y;
         this.width = platformWidth;
@@ -223,9 +186,15 @@ class Platform {
         this.oneJumpOnly = false;
         this.broken = false;
         this.hasSpring = false;
+        this.image = image
         this.chance = Math.floor(Math.random() * 20);
     }
     show() {
+        if (this.y === platformY) {
+            this.chance === 10
+        }
+
+
         // 25% chance of a platform being one jump only.
         if (this.chance >= 0 && this.chance <= 5) {
             this.oneJumpOnly = true;
@@ -236,21 +205,27 @@ class Platform {
 
         if (this.visible && this.oneJumpOnly === false && this.hasSpring === false) {
             // Draws the normal platform.
-            c.fillStyle = 'red';
-            c.fillRect(this.x, this.y, this.width, this.height);
+            /* c.drawImage(this.x, this.y, this.width, ); */
+            c.drawImage(this.image[0], this.x, this.y, this.width, this.height);
         } else if (this.visible && this.oneJumpOnly) {
             // Draws the platform that only allows the player to jump once.
-            c.fillStyle = 'black';
-            c.fillRect(this.x, this.y, this.width, this.height);
+            c.drawImage(this.image[1], this.x, this.y, this.width, this.height);
         } else if (this.visible && this.hasSpring) {
             // Draws the platform that has a spring.
-            c.fillStyle = 'green';
+            c.drawImage(this.image[2], this.x, this.y, this.width, this.height);
+        }
+
+        if (this.broken) {
+            // Draws the broken platform.
+            c.clearRect(this.x, this.y, this.width, this.height);
             c.fillRect(this.x, this.y, this.width, this.height);
+/*             c.fillStyle = "red"; */
+            c.drawImage(this.image[3], this.x, this.y, this.width, this.height);
         }
     }
     update() {
         // Removes the platforms that are below the player and out of frame
-        if (this.y > canvas.height + 50) {
+        if (this.y > canvas.height + 150) {
             this.visible = false;
         }
 
@@ -261,14 +236,14 @@ class Platform {
 
         // Collision Detection between player and platform
         if (player.x < this.x + this.width && player.x + player.width > this.x && player.y < this.y + this.height && player.y + player.height > this.y && this.wasAbove && this.visible && player.ySpeed > 0 && this.broken === false) {
-            player.ySpeed = -700;   // The player speed on the y-axis upon collision.
+            player.ySpeed = -500;   // The player speed on the y-axis upon collision.
             playSound("playerJump");
             updateScore();
             enemyDisabled = false;
             if (this.oneJumpOnly && this.broken === false) {
                 this.broken = true;
             } else if (this.hasSpring) {
-                player.ySpeed = -3000
+                player.ySpeed = -2000
                 enemyDisabled = true;
             }
         }
@@ -403,13 +378,16 @@ function generateplatforms() {
     }
     const numberOfplatforms = 100;
     for (let i = 0; i < numberOfplatforms; i++) {
-        let ob = new Platform(Math.floor(Math.random() * (canvas.width - platformWidth)), platformY); // Random x-axis position between 0 and 600.
+        let image = images.platforms
+        let ob = new Platform(Math.floor(Math.random() * (canvas.width - platformWidth)), platformY, images.platforms); // Random x-axis position between 0 and 600.
         platforms.push(ob);
         platformY -= 100;
     }
 
     platforms[0].width = 1000;
     platforms[0].x = 0;
+    platforms[0].chance = 10;
+    console.log(platforms)
 }
 
 // Generates the platforms.
