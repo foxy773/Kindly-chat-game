@@ -1,10 +1,10 @@
 import { getDatabase, ref, set, child, update, remove, get, query, onValue } from "https://www.gstatic.com/firebasejs/9.9.0/firebase-database.js";
 
-function createImage(path){
+function createImage(path) {
     let image = new Image();
     image.src = path;
     return image;
-  }
+}
 
 const images = {
     player: [
@@ -27,8 +27,8 @@ const images = {
         createImage('../assets/platform-oneJump-1.png'),
         createImage('../assets/platform-spring-1.png'),
         createImage('../assets/platform-broken-1.png'),
-    ],
-
+        createImage('../assets/platform-ground.png'),
+    ]
 };
 
 const canvas = document.getElementById('game');
@@ -74,9 +74,9 @@ const playerWidth = playerRadius + 10;
 const playerXSpeed = 7;
 
 let playerFace = [
-    {expression: "default", eyes: "open", image: images.player[0]},
-    {expression: "hurt", eyes: "closed", image: images.player[1]},
-    {expression: "shocked", eyes: "open", image: images.player[2]},
+    { expression: "default", eyes: "open", image: images.player[0] },
+    { expression: "hurt", eyes: "closed", image: images.player[1] },
+    { expression: "shocked", eyes: "open", image: images.player[2] },
 ]
 
 let currentPlayerFace = "default"
@@ -148,7 +148,7 @@ class Cloud {
         this.shouldUpdateCloud = true;
     }
     show() {
-            c.drawImage(this.image, this.x, this.y);
+        c.drawImage(this.image, this.x, this.y);
     }
     update() {
         this.x -= this.xSpeed;
@@ -175,9 +175,10 @@ class Player {
         c.beginPath();
         c.arc(this.x + 15, this.y, this.r, 0, (2 * Math.PI), false);
         c.fillStyle = "#1cd300"; //Kindly green
-        
+
         c.closePath();
         c.fill();
+        c.stroke()
         if (currentPlayerFace === "default") {
             c.drawImage(playerFace[0].image, this.x + 5, this.y - 10, this.height, this.width);
         } else if (currentPlayerFace === "hurt") {
@@ -185,8 +186,8 @@ class Player {
         } else if (currentPlayerFace === "shocked") {
             c.drawImage(playerFace[2].image, this.x + 5, this.y - 10, this.height, this.width);
         }
-        
-        }
+
+    }
 
     update() {
         this.x += this.xSpeed;  //Move the player on the x-axis.
@@ -221,7 +222,6 @@ class Platform {
             this.chance === 10
         }
 
-
         // 25% chance of a platform being one jump only.
         if (this.chance >= 0 && this.chance <= 5) {
             this.oneJumpOnly = true;
@@ -229,8 +229,9 @@ class Platform {
         } else if (this.chance === 6) {
             this.hasSpring = true;
         }
-
-        if (this.visible && this.oneJumpOnly === false && this.hasSpring === false) {
+        if (this.visible && this.chance === -1) {
+            c.drawImage(this.image[4], this.x, this.y, this.width, this.height);
+        } else if (this.visible && this.oneJumpOnly === false && this.hasSpring === false) {
             // Draws the normal platform.
             /* c.drawImage(this.x, this.y, this.width, ); */
             c.drawImage(this.image[0], this.x, this.y, this.width, this.height);
@@ -246,7 +247,7 @@ class Platform {
             // Draws the broken platform.
             c.clearRect(this.x, this.y, this.width, this.height);
             c.fillRect(this.x, this.y, this.width, this.height);
-/*             c.fillStyle = "red"; */
+            /*             c.fillStyle = "red"; */
             c.drawImage(this.image[3], this.x, this.y, this.width, this.height);
         }
     }
@@ -290,7 +291,7 @@ class Platform {
         } else if (player.ySpeed < -500) {
             currentPlayerFace = "shocked";
         }
-        
+
         this.y -= player.ySpeed * 0.02;
     }
 }
@@ -332,20 +333,20 @@ class Enemy {
         c.translate(this.x, this.y);
         c.rotate(this.rotation);
         c.translate(-(this.x), -(this.y));
-        c.drawImage(images.enemy[0], (this.x-this.r), (this.y-this.r), this.width, this.height);
+        c.drawImage(images.enemy[0], (this.x - this.r), (this.y - this.r), this.width, this.height);
         c.setTransform(1, 0, 0, 1, 0, 0);
 
 
 
 
-            /* ctx.setTransform(1, 0, 0, 1, x, y); // set the scale and the center pos
-            ctx.rotate(rot); // set the rotation
-            ctx.drawImage(img, -img.width /2, -img.height /2); // draw image offset 
-                                                               // by half its width
-                                                               // and heigth
-            ctx.setTransform(1, 0, 0, 1, 0, 0); // restore default transform */
+        /* ctx.setTransform(1, 0, 0, 1, x, y); // set the scale and the center pos
+        ctx.rotate(rot); // set the rotation
+        ctx.drawImage(img, -img.width /2, -img.height /2); // draw image offset 
+                                                           // by half its width
+                                                           // and heigth
+        ctx.setTransform(1, 0, 0, 1, 0, 0); // restore default transform */
 
-        
+
 
         /* if (enemyDisabled && this.visible) {
             this.visible = false;
@@ -430,7 +431,8 @@ function generateplatforms() {
 
     platforms[0].width = 1000;
     platforms[0].x = 0;
-    platforms[0].chance = 10;
+    platforms[0].chance = -1;
+    platforms[0].height = 800;
     console.log(platforms)
 }
 
@@ -441,7 +443,7 @@ function generateEnemies() {
     } else {
         enemyY = enemies[enemies.length - 1].y - 400;
     }
-    const numberOfEnemies = 16;
+    const numberOfEnemies = 20;
     for (let i = 0; i < numberOfEnemies; i++) {
         let en = new Enemy(Math.floor(Math.random() * (canvas.width - enemyWidth)), enemyY); // Random x-axis position between 0 and 600.
         enemies.push(en);
@@ -457,8 +459,8 @@ function generateClouds() {
     }
     const numberOfClouds = 20;
     for (let i = 0; i < numberOfClouds; i++) {
-            let cl = new Cloud(getRandomNumber(canvas.width - 500, canvas.width + 5000), getRandomNumber(0 - canvas.height, canvas.height + 300), cloudHeight, cloudWidth, getRandomNumber(cloudMinSpeed, cloudMaxSpeed), images.clouds[getRandomNumber(0, images.clouds.length - 1)]); // Random x-axis position between 0 and 600.
-            clouds.push(cl);
+        let cl = new Cloud(getRandomNumber(canvas.width - 500, canvas.width + 5000), getRandomNumber(0 - canvas.height, canvas.height + 300), cloudHeight, cloudWidth, getRandomNumber(cloudMinSpeed, cloudMaxSpeed), images.clouds[getRandomNumber(0, images.clouds.length - 1)]); // Random x-axis position between 0 and 600.
+        clouds.push(cl);
     }
 }
 
@@ -505,10 +507,21 @@ function updateGame(time) {
         return;
     }
 
+
+
     const delta = time - lastTime
     console.log(delta, "DELTA!")
 
+
+    if (fpsLimit && delta < 1000 / fpsLimit) {
+        return;
+    }
+
     lastTime = time
+
+
+
+
     window.requestAnimationFrame(updateGame);
 }
 window.requestAnimationFrame(updateGame);
