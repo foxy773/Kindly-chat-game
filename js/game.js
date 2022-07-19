@@ -7,6 +7,14 @@ function createImage(path){
   }
 
 const images = {
+    player: [
+        createImage('../assets/eyes.png'),
+        createImage('../assets/eyes-closed.png'),
+        createImage('../assets/eyes-shocked.png'),
+    ],
+    enemy: [
+        createImage('../assets/enemy.png'),
+    ],
     clouds: [
         createImage('../assets/cloud-1.png'),
         createImage('../assets/cloud-2.png'),
@@ -63,6 +71,16 @@ let level;
 const playerRadius = 20;
 const playerHeight = playerRadius;
 const playerWidth = playerRadius + 10;
+const playerXSpeed = 7;
+
+let playerFace = [
+    {expression: "default", eyes: "open", image: images.player[0]},
+    {expression: "hurt", eyes: "closed", image: images.player[1]},
+    {expression: "shocked", eyes: "open", image: images.player[2]},
+]
+
+let currentPlayerFace = "default"
+
 
 // platform / Platform attributes
 const platformHeight = 15;
@@ -157,9 +175,18 @@ class Player {
         c.beginPath();
         c.arc(this.x + 15, this.y, this.r, 0, (2 * Math.PI), false);
         c.fillStyle = "#1cd300"; //Kindly green
+        
         c.closePath();
         c.fill();
-    }
+        if (currentPlayerFace === "default") {
+            c.drawImage(playerFace[0].image, this.x + 5, this.y - 10, this.height, this.width);
+        } else if (currentPlayerFace === "hurt") {
+            c.drawImage(playerFace[1].image, this.x + 5, this.y - 10, this.height, this.width);
+        } else if (currentPlayerFace === "shocked") {
+            c.drawImage(playerFace[2].image, this.x + 5, this.y - 10, this.height, this.width);
+        }
+        
+        }
 
     update() {
         this.x += this.xSpeed;  //Move the player on the x-axis.
@@ -239,6 +266,9 @@ class Platform {
             player.ySpeed = -500;   // The player speed on the y-axis upon collision.
             playSound("playerJump");
             updateScore();
+
+            currentPlayerFace = "hurt";
+
             enemyDisabled = false;
             if (this.oneJumpOnly && this.broken === false) {
                 this.broken = true;
@@ -254,21 +284,14 @@ class Platform {
             generateplatforms();
             /*  console.log("Generate new platforms", this.ySpeed, "ySpeed") */
         }
-        /* let playerIsDead = 0; */
-        /* let playerIsDead =  */ /* console.log(platforms.lastIndexOf(platform => platform.visible === false)); // If the player is dead. */
 
-        /* if (playerIsDead) {
-            startNewGame();
-        } */
-
-        /* if (playerIsDead) {
-            gameOver();
-            console.log("GAME OVER!")
-        } */
-
-        /* Increases the fall speed/velocity of the player*/
+        if (player.ySpeed === 0) {
+            currentPlayerFace = "default";
+        } else if (player.ySpeed < -500) {
+            currentPlayerFace = "shocked";
+        }
+        
         this.y -= player.ySpeed * 0.02;
-        /* player.ySpeed += (gravity / (level +1)); */
     }
 }
 
@@ -285,6 +308,8 @@ class Enemy {
         this.visible = true;
         /* this.moving = true;   */
         this.wasAbove = false;
+        this.rotating = true
+        this.rotation = 90
         this.chance = Math.floor(Math.random() * 10);   // Not used
     }
     get moving() {
@@ -295,14 +320,32 @@ class Enemy {
             this.color = "red";
         } else if (enemyDisabled && this.visible) {
             this.color = "blue"
-        } else if (this.visible === false) {
+        } /* else if (this.visible === false) {
             this.color = "black"
-        }
-        c.beginPath();
-        c.arc(this.x + 15, this.y, this.r, 0, (2 * Math.PI), false);    //Draw a circle at the player's position / makes the player a circle.
-        c.fillStyle = this.color;
-        c.closePath();
-        c.fill();
+        } */
+        /* c.beginPath();
+        c.arc(this.x + 15, this.y, this.r, 0, (2 * Math.PI), false); */    //Draw a circle at the player's position / makes the player a circle.
+        /* c.fillStyle = this.color; */
+        /* c.closePath();
+        c.fill(); */
+
+        c.translate(this.x, this.y);
+        c.rotate(this.rotation);
+        c.translate(-(this.x), -(this.y));
+        c.drawImage(images.enemy[0], (this.x-this.r), (this.y-this.r), this.width, this.height);
+        c.setTransform(1, 0, 0, 1, 0, 0);
+
+
+
+
+            /* ctx.setTransform(1, 0, 0, 1, x, y); // set the scale and the center pos
+            ctx.rotate(rot); // set the rotation
+            ctx.drawImage(img, -img.width /2, -img.height /2); // draw image offset 
+                                                               // by half its width
+                                                               // and heigth
+            ctx.setTransform(1, 0, 0, 1, 0, 0); // restore default transform */
+
+        
 
         /* if (enemyDisabled && this.visible) {
             this.visible = false;
@@ -349,6 +392,7 @@ class Enemy {
         this.y -= player.ySpeed * 0.02;
         /* player.ySpeed += (gravity / (level +1)); */
         this.x += this.xSpeed;
+        this.rotation += 0.1;
     }
 }
 
@@ -415,8 +459,6 @@ function generateClouds() {
     for (let i = 0; i < numberOfClouds; i++) {
             let cl = new Cloud(getRandomNumber(canvas.width - 500, canvas.width + 5000), getRandomNumber(0 - canvas.height, canvas.height + 300), cloudHeight, cloudWidth, getRandomNumber(cloudMinSpeed, cloudMaxSpeed), images.clouds[getRandomNumber(0, images.clouds.length - 1)]); // Random x-axis position between 0 and 600.
             clouds.push(cl);
-        
-        
     }
 }
 
@@ -476,10 +518,10 @@ window.requestAnimationFrame(updateGame);
 // If the button is pressed the player will move on the x-axis with the direction chosen.
 function keyDown(e) {
     if (e.keyCode === 39 || e.keyCode === 68) { // Right arrow key, or D key
-        player.xSpeed = 6
+        player.xSpeed = playerXSpeed
 
     } else if (e.keyCode === 37 || e.keyCode === 65) { // Left arrow key, or A key
-        player.xSpeed = -6;
+        player.xSpeed = 0 - playerXSpeed;
     }
 }
 
@@ -494,15 +536,15 @@ const mobileTouchLeft = document.getElementById("mobile-touch-left");
 const mobileTouchRight = document.getElementById("mobile-touch-right");
 
 mobileTouchLeft.addEventListener("touchstart", function () {
-    player.xSpeed = -6;
+    player.xSpeed = 0 - playerXSpeed;
 })
 
 mobileTouchLeft.addEventListener("touchend", function () {
-    player.xSpeed = 6;
+    player.xSpeed = 0;
 })
 
 mobileTouchRight.addEventListener("touchstart", function () {
-    player.xSpeed = 6;
+    player.xSpeed = playerXSpeed;
 })
 
 mobileTouchRight.addEventListener("touchend", function () {
