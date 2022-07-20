@@ -1,0 +1,25 @@
+{
+  "name": "kindly-chat-game",
+  "version": "1.0.0",
+  "description": "HELLO WORLD!",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/foxy773/Kindly-chat-game.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/foxy773/Kindly-chat-game/issues"
+  },
+  "homepage": "https://github.com/foxy773/Kindly-chat-game#readme",
+  "devDependencies": {
+    "eslint": "^8.20.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.26.0"
+  }
+}
