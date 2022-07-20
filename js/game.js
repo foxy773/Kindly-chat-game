@@ -472,20 +472,49 @@ function generateClouds() {
     }
 }
 
-let secondsPassed
-let oldTimeStamp
-let fps
+let time_step = 1000 / 60,
+delta = 0,
+last_frame_time_ms = 0, // The last time the loop was run
+max_FPS = 60; // The maximum FPS we want to allow
 
 
 // Updates the game
-function updateGame(timeStamp) {
+function updateGame(timestamp) {
 
-    secondsPassed = (timeStamp - oldTimeStamp) / 1000;
+    if (timestamp < last_frame_time_ms + (1000 / max_FPS)) {
+        requestAnimationFrame(updateGame);
+        return;
+    }
+ 
+    delta += timestamp - last_frame_time_ms;
+    last_frame_time_ms = timestamp;
+ 
+    let num_update_steps = 0;
+    while (delta >= time_step) {
+ 
+        // update our game logic before draw things to canvas
+        updateItems(time_step);
+        delta -= time_step;
+    }
+
+/*     secondsPassed = (timeStamp - oldTimeStamp) / 1000;
     oldTimeStamp = timeStamp;
 
-    fps = Math.round(1 / secondsPassed);
+    fps = Math.round(1 / secondsPassed); */
 
     //background
+    draw();
+
+
+
+    window.requestAnimationFrame(updateGame);
+
+    /* console.log(fps) */
+}
+window.requestAnimationFrame(updateGame);
+
+
+function draw() {
     c.fillStyle = 'lightblue';
     c.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -508,25 +537,22 @@ function updateGame(timeStamp) {
     }
 
     player.show();
-    player.update();
+    
+    /* console.log(lastIndex, "lastIndex"); */
+    /* console.log(score, "score"); */
+    drawScores();
+}
 
+function updateItems(dt) {
+    player.update();
+    console.log(dt)
     player.ySpeed += gravity * 100;
 
     lastIndex = platforms.map(platforms => platforms.visible).lastIndexOf(false);
     if (platforms[lastIndex]?.y < player.y - 500 || platforms[0].y < player.y - 500) {
         gameOver()
     }
-    /* console.log(lastIndex, "lastIndex"); */
-    /* console.log(score, "score"); */
-    drawScores();
-
-
-
-    window.requestAnimationFrame(updateGame);
-
-    console.log(fps)
 }
-
 // Event Listeners
 
 // If the button is pressed the player will move on the x-axis with the direction chosen.
