@@ -14,6 +14,7 @@ const images = {
     ],
     enemy: [
         createImage('../assets/enemy.png'),
+        createImage('../assets/enemy-disabled.png'),
     ],
     clouds: [
         createImage('../assets/cloud-1.png'),
@@ -273,6 +274,7 @@ class Platform {
             enemyDisabled = false;
             if (this.oneJumpOnly && this.broken === false) {
                 this.broken = true;
+                playSound("woodPlatformBreakes");
             } else if (this.hasSpring) {
                 player.ySpeed = -2000
                 enemyDisabled = true;
@@ -329,13 +331,18 @@ class Enemy {
         /* c.fillStyle = this.color; */
         /* c.closePath();
         c.fill(); */
-
+        if (enemyDisabled === false) {
         c.translate(this.x, this.y);
         c.rotate(this.rotation);
         c.translate(-(this.x), -(this.y));
         c.drawImage(images.enemy[0], (this.x - this.r), (this.y - this.r), this.width, this.height);
         c.setTransform(1, 0, 0, 1, 0, 0);
-
+    } else {
+        c.translate(this.x, this.y);
+        c.translate(-(this.x), -(this.y));
+        c.drawImage(images.enemy[1], this.x, this.y, this.width, this.height);
+        c.setTransform(1, 0, 0, 1, 0, 0);
+    }
 
 
 
@@ -375,8 +382,8 @@ class Enemy {
             console.log("Died by enemy", this)
         }
 
-        if (this.moving /* && this.chance === 2 */) {
-
+        if (this.moving && enemyDisabled === false) {
+            this.x += this.xSpeed;
             if (this.x > canvas.width - this.width) {
                 this.xSpeed -= 6;
             } else if (this.x < 0) {
@@ -392,7 +399,8 @@ class Enemy {
         /* Increases the fall speed/velocity of the player*/
         this.y -= player.ySpeed * 0.02;
         /* player.ySpeed += (gravity / (level +1)); */
-        this.x += this.xSpeed;
+
+        /* this.x += this.xSpeed; */
         this.rotation += 0.1;
     }
 }
@@ -464,8 +472,18 @@ function generateClouds() {
     }
 }
 
+let secondsPassed
+let oldTimeStamp
+let fps
+
+
 // Updates the game
-function updateGame(time) {
+function updateGame(timeStamp) {
+
+    secondsPassed = (timeStamp - oldTimeStamp) / 1000;
+    oldTimeStamp = timeStamp;
+
+    fps = Math.round(1 / secondsPassed);
 
     //background
     c.fillStyle = 'lightblue';
@@ -502,29 +520,12 @@ function updateGame(time) {
     /* console.log(score, "score"); */
     drawScores();
 
-    if (lastTime == null) {
-        window.requestAnimationFrame(updateGame)
-        return;
-    }
-
-
-
-    const delta = time - lastTime
-    console.log(delta, "DELTA!")
-
-
-    if (fpsLimit && delta < 1000 / fpsLimit) {
-        return;
-    }
-
-    lastTime = time
-
-
 
 
     window.requestAnimationFrame(updateGame);
+
+    console.log(fps)
 }
-window.requestAnimationFrame(updateGame);
 
 // Event Listeners
 
@@ -596,12 +597,15 @@ function getDistance(x1, y1, x2, y2) {
 
 function playSound(audio) {                                  // Plays sounds based on method call strings
     const playerJump = "../sounds/SFX_Jump_42.wav";
+    const woodPlatformBreakes = "../sounds/stick-breaking.wav";
     if (audio === "playerJump") {
         audio = new Audio(playerJump);
         audio.volume = 0.4;
-    } else if (audio === "chipsReset") {
-
+    } else if (audio === "woodPlatformBreakes") {
+        audio = new Audio(woodPlatformBreakes);
+        audio.volume = 1;
     }
+
     audio.play("");
 }
 
