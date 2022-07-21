@@ -107,11 +107,11 @@ let lastIndex;
 /* let backgroundMusicIsEnabled = true; */
 
 /* if (backgroundMusicIsEnabled) { */
-    const music = "../sounds/Bicycle.mp3";
-    const backgroundMusic = new Audio(music);
-    backgroundMusic.volume = 1;
-    backgroundMusic.loop = true;
-    backgroundMusic.play();
+const music = "../sounds/Bicycle.mp3";
+const backgroundMusic = new Audio(music);
+backgroundMusic.volume = 1;
+backgroundMusic.loop = true;
+backgroundMusic.play();
 /* } */
 
 class Cloud {
@@ -365,11 +365,9 @@ class Enemy {
             this.wasAbove = true;
         }
 
-        const yDistanceBetweenPlayerAndEnemy = getYDistance(this.y, player.y);
-
         // Collision Detection between player and enemies
         const distanceBetweenPlayerEnemy = getDistance(this.x, this.y, player.x, player.y);
-        console.log(yDistanceBetweenPlayerAndEnemy, "playerEnemy");
+        /* console.log(yDistanceBetweenPlayerAndEnemy, "playerEnemy"); */
         if (distanceBetweenPlayerEnemy < this.r + player.r && this.visible === true && enemyDisabled === false) {
             gameOver();
             console.log("Died by enemy", this);
@@ -490,42 +488,43 @@ function generateClouds() {
 function generateBackground() {
     generateClouds();
 }
-
-const timeStep = 1000 / 60;
-let delta = 0;
-let lastFrameTimeMs = 0; // The last time the loop was run
-const maxFps = 60; // The maximum FPS we want to allow
+const fps = 60;
+let now;
+let then = performance.now();
+const interval = 1000 / fps;
+let delta;
 
 // Updates the game
-function updateGame(timestamp) {
-    if (timestamp < lastFrameTimeMs + (1000 / maxFps)) {
-        requestAnimationFrame(updateGame);
-        return;
-    }
-
-    delta += timestamp - lastFrameTimeMs;
-    lastFrameTimeMs = timestamp;
-
-    /* const numUpdateSteps = 0; */
-    while (delta >= timeStep) {
-        // update our game logic before draw things to canvas
-        updateItems(timeStep);
-        delta -= timeStep;
-    }
-
-    /*     secondsPassed = (timeStamp - oldTimeStamp) / 1000;
-    oldTimeStamp = timeStamp;
-
-    fps = Math.round(1 / secondsPassed); */
-
-    // background
-    draw();
-
+function updateGame() {
     window.requestAnimationFrame(updateGame);
+
+    now = performance.now();
+    delta = now - then;
+
+    if (delta > interval) {
+        // update time stuffs
+
+        // Just `then = now` is not enough.
+        // Lets say we set fps at 10 which means
+        // each frame must take 100ms
+        // Now frame executes in 16ms (60fps) so
+        // the loop iterates 7 times (16*7 = 112ms) until
+        // delta > interval === true
+        // Eventually this lowers down the FPS as
+        // 112*10 = 1120ms (NOT 1000ms).
+        // So we have to get rid of that extra 12ms
+        // by subtracting delta (112) % interval (100).
+        // Hope that makes sense.
+
+        then = now - (delta % interval);
+    }
+    draw();
+    updateItems()
+
 
     /* console.log(fps) */
 }
-window.requestAnimationFrame(updateGame);
+
 
 function draw() {
     c.fillStyle = "lightblue";
@@ -556,9 +555,8 @@ function draw() {
     drawScores();
 }
 
-function updateItems(dt) {
+function updateItems() {
     player.update();
-    console.log(dt);
     player.ySpeed += gravity * 10;
 
     lastIndex = platforms.map((platform) => platform.visible).lastIndexOf(false);
