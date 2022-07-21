@@ -100,7 +100,7 @@ const cloudMinSpeed = 1;
 const cloudMaxSpeed = 1.2;
 
 // General game attributes
-let gravity = 0.1;
+let gravity = 1;
 let score;
 let highScore = 0;
 let lastIndex;
@@ -263,7 +263,7 @@ class Platform {
             && this.wasAbove && this.visible
             && player.ySpeed > 0
             && this.broken === false) {
-            player.ySpeed = -500; // The player speed on the y-axis upon collision.
+            player.ySpeed = -400; // The player speed on the y-axis upon collision.
             playSound("playerJump");
             updateScore();
 
@@ -293,7 +293,7 @@ class Platform {
             currentPlayerFace = "shocked";
         }
 
-        this.y -= player.ySpeed * 0.02;
+        this.y -= player.ySpeed * 0.03;
     }
 }
 
@@ -312,7 +312,7 @@ class Enemy {
         this.wasAbove = false;
         this.rotating = true;
         this.rotation = 90;
-        this.chance = Math.floor(Math.random() * 10); // Not used
+        this.chance = Math.floor(Math.random() * 100); // Not used
     }
 
     get moving() {
@@ -394,8 +394,8 @@ class Enemy {
             generateEnemies();
         }
 
-        /* Increases the fall speed/velocity of the player */
-        this.y -= player.ySpeed * 0.02;
+        /* Increases the fall speed/velocity of the enemy */
+        this.y -= player.ySpeed * 0.03;
         /* player.ySpeed += (gravity / (level +1)); */
 
         /* this.x += this.xSpeed; */
@@ -554,7 +554,7 @@ function draw() {
 function updateItems(dt) {
     player.update();
     console.log(dt);
-    player.ySpeed += gravity * 100;
+    player.ySpeed += gravity * 10;
 
     lastIndex = platforms.map((platform) => platform.visible).lastIndexOf(false);
     if (platforms[lastIndex]?.y < player.y - 500 || platforms[0].y < player.y - 500) {
@@ -614,7 +614,7 @@ function resetGlobalVariables() {
     platforms = [];
     enemies = [];
     clouds = [];
-    gravity = 0.1;
+    gravity = 1;
     player.ySpeed = 3;
     player.xSpeed = 0;
     /* player.y = 1000; */
