@@ -719,7 +719,7 @@ async function registerNewUser(newToken, db) {
 async function updateUserHighscore(userToken, newScore, db) {
     try {
         update(ref(db, `users/${userToken}`), {
-            newScore,
+            highScore: newScore,
         }).then(() => {
             console.log("Successfully updated high score!");
         });
