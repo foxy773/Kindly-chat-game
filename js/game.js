@@ -518,16 +518,12 @@ function updateGame() {
 
         then = now - (delta % interval);
         /* console.log(then, "then"); */
+        draw();
+        updateItems();
     }
-    window.requestAnimationFrame(draw)
 
     /* console.log(fps) */
 }
-
-setInterval(() => {
-    updateItems()
-}, 1000 / fps);
-
 
 function draw() {
     c.fillStyle = "lightblue";
@@ -631,10 +627,6 @@ function getDistance(x1, y1, x2, y2) {
     const xDis = x2 - x1;
     const yDis = y2 - y1;
     return Math.sqrt(xDis ** 2 + yDis ** 2);
-}
-
-function getYDistance(y1, y2) {
-    return y2 - y1;
 }
 
 function playSound(audio, soundVolume) { // Plays sounds based on method call strings
