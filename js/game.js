@@ -488,7 +488,7 @@ function generateClouds() {
 function generateBackground() {
     generateClouds();
 }
-const fps = 1;
+const fps = 60;
 let now;
 let then = performance.now();
 const interval = 1000 / fps;
@@ -520,11 +520,13 @@ function updateGame() {
         /* console.log(then, "then"); */
     }
     window.requestAnimationFrame(draw)
-    window.requestAnimationFrame(updateItems)
-
 
     /* console.log(fps) */
 }
+
+setInterval(() => {
+    updateItems()
+}, 1000 / fps);
 
 
 function draw() {
