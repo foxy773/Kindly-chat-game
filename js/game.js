@@ -488,7 +488,7 @@ function generateClouds() {
 function generateBackground() {
     generateClouds();
 }
-const fps = 60;
+const fps = 1;
 let now;
 let then = performance.now();
 const interval = 1000 / fps;
@@ -500,7 +500,7 @@ function updateGame() {
 
     now = performance.now();
     delta = now - then;
-
+    console.log(delta, interval, "delta", "interval");
     if (delta > interval) {
         // update time stuffs
 
@@ -517,9 +517,10 @@ function updateGame() {
         // Hope that makes sense.
 
         then = now - (delta % interval);
+        /* console.log(then, "then"); */
     }
-    draw();
-    window.requestAnimationFrame(updateItems);
+    window.requestAnimationFrame(draw)
+    window.requestAnimationFrame(updateItems)
 
 
     /* console.log(fps) */
