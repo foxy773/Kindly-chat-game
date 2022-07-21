@@ -1,6 +1,6 @@
 import {
     getDatabase, ref, set, update, get,
-// eslint-disable-next-line import/no-unresolved, import/extensions
+    // eslint-disable-next-line import/no-unresolved, import/extensions
 } from "https://www.gstatic.com/firebasejs/9.9.0/firebase-database.js";
 
 function createImage(path) {
@@ -51,7 +51,6 @@ if (gameWindow.classList.contains("hidden")) {
         gameWindow.classList.remove("hidden");
         gameMenu.classList.add("hidden");
         window.requestAnimationFrame(updateGame);
-
         startNewGame();
     });
 }
@@ -105,20 +104,14 @@ let score;
 let highScore = 0;
 let lastIndex;
 
-/* function assetsLoaded() {
-    assetLoadCount++
-    updateGame()
-} */
+if (backgroundMusicIsEnabled) {
+    const music = "../sounds/Bicycle.mp3";
+    const backgroundMusic = new Audio(music);
+    backgroundMusic.volume = 1;
+    backgroundMusic.loop = true;
+    backgroundMusic.play();
+}
 
-/* function loadImage(image, cloudImage) {
-    cloudImage.onload = function() {
-        c.drawImage(image, this.x, this.y);
-        console.log("finish loading");
-    };
-    console.log(image,"test")
-    cloudImage.src = image;
-
-  } */
 
 class Cloud {
     constructor(x, y, width, height, xSpeed, image) {
@@ -264,7 +257,7 @@ class Platform {
             && player.ySpeed > 0
             && this.broken === false) {
             player.ySpeed = -400; // The player speed on the y-axis upon collision.
-            playSound("playerJump");
+            playSound("playerJump", 0.4);
             updateScore();
 
             currentPlayerFace = "hurt";
@@ -272,7 +265,7 @@ class Platform {
             enemyDisabled = false;
             if (this.oneJumpOnly && this.broken === false) {
                 this.broken = true;
-                playSound("woodPlatformBreakes");
+                playSound("woodPlatformBreakes", 1);
             } else if (this.hasSpring) {
                 player.ySpeed = -2000;
                 enemyDisabled = true;
@@ -371,10 +364,12 @@ class Enemy {
             this.wasAbove = true;
         }
 
-        // Collision Detection between player and enemies
-        const playerEnemy = getDistance(this.x, this.y, player.x, player.y);
+        const yDistanceBetweenPlayerAndEnemy = getYDistance(this.y, player.y);
 
-        if (playerEnemy < this.r + player.r && this.visible === true && enemyDisabled === false) {
+        // Collision Detection between player and enemies
+        const distanceBetweenPlayerEnemy = getDistance(this.x, this.y, player.x, player.y);
+        console.log(yDistanceBetweenPlayerAndEnemy, "playerEnemy");
+        if (distanceBetweenPlayerEnemy < this.r + player.r && this.visible === true && enemyDisabled === false) {
             gameOver();
             console.log("Died by enemy", this);
         }
@@ -386,6 +381,15 @@ class Enemy {
             } else if (this.x < 0) {
                 this.xSpeed = 6;
             }
+        }
+        /* console.log(getDistance(this.x, this.y, player.x, player.y)); */
+        /* console.log((1 / (distanceBetweenPlayerEnemy)).toFixed(10)) */
+        /* sawSound.volume = (1 / (distanceBetweenPlayerEnemy)).toFixed(2); */
+
+        if ((player.y > this.y - 100 && player.y < this.y + 100)
+            && player.x > this.x - 100 && player.x < this.x + 100
+            && this.visible === true && enemyDisabled === false) {
+            /* console.log(sawVolume); */
         }
 
         // Auto generates platforms and additions the level + 1
@@ -627,17 +631,20 @@ function getDistance(x1, y1, x2, y2) {
     return Math.sqrt(xDis ** 2 + yDis ** 2);
 }
 
-function playSound(audio) { // Plays sounds based on method call strings
+function getYDistance(y1, y2) {
+    return y2 - y1;
+}
+
+function playSound(audio, soundVolume) { // Plays sounds based on method call strings
     const playerJump = "../sounds/SFX_Jump_42.wav";
     const woodPlatformBreakes = "../sounds/stick-breaking.wav";
     if (audio === "playerJump") {
         audio = new Audio(playerJump);
-        audio.volume = 0.4;
+        audio.volume = soundVolume;
     } else if (audio === "woodPlatformBreakes") {
         audio = new Audio(woodPlatformBreakes);
-        audio.volume = 1;
+        audio.volume = soundVolume;
     }
-
     audio.play("");
 }
 
