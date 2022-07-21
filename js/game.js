@@ -519,7 +519,7 @@ function updateGame() {
         then = now - (delta % interval);
     }
     draw();
-    updateItems()
+    window.requestAnimationFrame(updateItems);
 
 
     /* console.log(fps) */
