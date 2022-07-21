@@ -104,14 +104,15 @@ let score;
 let highScore = 0;
 let lastIndex;
 
-if (backgroundMusicIsEnabled) {
+/* let backgroundMusicIsEnabled = true; */
+
+/* if (backgroundMusicIsEnabled) { */
     const music = "../sounds/Bicycle.mp3";
     const backgroundMusic = new Audio(music);
     backgroundMusic.volume = 1;
     backgroundMusic.loop = true;
     backgroundMusic.play();
-}
-
+/* } */
 
 class Cloud {
     constructor(x, y, width, height, xSpeed, image) {
