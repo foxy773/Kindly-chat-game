@@ -44,6 +44,7 @@ canvas {
   margin: auto;
   position: relative;
   z-index: 1;
+  user-select: none;
 }
 
 .game-window__menu {
