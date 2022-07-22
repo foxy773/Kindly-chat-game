@@ -3,6 +3,14 @@ import {
     // eslint-disable-next-line import/no-unresolved, import/extensions
 } from "https://www.gstatic.com/firebasejs/9.9.0/firebase-database.js";
 
+if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+    window.document.addEventListener("touchmove", (e) => {
+        if (e.scale !== 1) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+}
+
 function createImage(path) {
     const image = new Image();
     image.src = path;
@@ -517,7 +525,7 @@ function updateGame() {
 
     now = performance.now();
     delta = now - then;
-/*     console.log(delta, interval, "delta", "interval"); */
+    /*     console.log(delta, interval, "delta", "interval"); */
     if (delta > interval) {
         // update time stuffs
 
