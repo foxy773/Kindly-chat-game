@@ -44,7 +44,8 @@ const gameWindow = document.querySelector(".game-window__game");
 const startGameButton = document.querySelector("#start-game");
 const highscoreList = document.getElementById("highscore-list");
 const changeUsernameButton = document.getElementById("change-username");
-const kindlyHighscoreList = document.getElementById("kindly-highscore-list"); // !!! To remove before release.
+
+const worldElem = document.querySelector("[data-world]");
 
 if (gameWindow.classList.contains("hidden")) {
     startGameButton.addEventListener("click", () => {
@@ -52,6 +53,7 @@ if (gameWindow.classList.contains("hidden")) {
         gameMenu.classList.add("hidden");
         window.requestAnimationFrame(updateGame);
         startNewGame();
+        /* backgroundMusic.play(); */
     });
 }
 
@@ -60,8 +62,14 @@ window.onload = (() => {
 });
 
 // Global Variables.
-// Player / Character attributes.
+// Scaling the canvas to the screen.
+const WORLD_WIDTH = 600;
+const WORLD_HEIGHT = 600;
 
+const scaleRatio = setPixelToWorldScale();
+console.log(scaleRatio, "SCALE RATIO");
+
+// Player / Character attributes.
 let player;
 let platforms = [];
 let platformY;
@@ -69,10 +77,15 @@ let enemies = [];
 let enemyY;
 let clouds = [];
 let level;
-const playerRadius = 20;
+const playerRadius = 20 * scaleRatio;
+
 const playerHeight = playerRadius;
 const playerWidth = playerRadius + 10;
-const playerXSpeed = 7;
+
+const playerStartX = 300 * scaleRatio;
+const playerStartY = 400 * scaleRatio;
+
+const playerXSpeed = 7 * scaleRatio;
 
 const playerFace = [
     { expression: "default", eyes: "open", image: images.player[0] },
@@ -83,18 +96,18 @@ const playerFace = [
 let currentPlayerFace = "default";
 
 // platform / Platform attributes
-const platformHeight = 15;
-const platformWidth = 60;
+const platformHeight = 15 * scaleRatio;
+const platformWidth = 60 * scaleRatio;
 
 // Enemies / Enemy attributes
-const enemyRadius = 20;
+const enemyRadius = 20 * scaleRatio;
 const enemyHeight = enemyRadius * 2;
 const enemyWidth = enemyRadius * 2;
 let enemyDisabled = false;
 
 // Clouds / Cloud attributes
-const cloudHeight = 100;
-const cloudWidth = 200;
+const cloudHeight = 100 * scaleRatio;
+const cloudWidth = 200 * scaleRatio;
 const cloudMinSpeed = 1;
 const cloudMaxSpeed = 1.2;
 
@@ -104,14 +117,27 @@ let score;
 let highScore = 0;
 let lastIndex;
 
-/* let backgroundMusicIsEnabled = true; */
+setPixelToWorldScale();
+window.addEventListener("resize", setPixelToWorldScale);
 
-/* if (backgroundMusicIsEnabled) { */
+function setPixelToWorldScale() {
+    let worldToPixelScale;
+
+    if (window.innerWidth / window.innerHeight < WORLD_WIDTH / WORLD_HEIGHT) {
+        worldToPixelScale = window.innerWidth / WORLD_WIDTH;
+    } else {
+        worldToPixelScale = window.innerHeight / WORLD_HEIGHT;
+    }
+
+    worldElem.style.width = `${WORLD_WIDTH * worldToPixelScale}px`;
+    worldElem.style.height = `${WORLD_HEIGHT * worldToPixelScale}px`;
+    return worldToPixelScale;
+}
+
 const music = "../sounds/Bicycle.mp3";
 const backgroundMusic = new Audio(music);
 backgroundMusic.volume = 1;
 backgroundMusic.loop = true;
-backgroundMusic.play();
 /* } */
 
 class Cloud {
@@ -193,7 +219,7 @@ class Platform {
         this.y = y;
         this.width = platformWidth;
         this.height = platformHeight;
-        this.ySpeed = 3;
+        this.ySpeed = 3 * scaleRatio;
         this.visible = true;
         this.moving = false; // Not used
         this.wasAbove = false;
@@ -257,7 +283,7 @@ class Platform {
             && this.wasAbove && this.visible
             && player.ySpeed > 0
             && this.broken === false) {
-            player.ySpeed = -400; // The player speed on the y-axis upon collision.
+            player.ySpeed = -400 * scaleRatio; // The player speed on the y-axis upon collision.
             playSound("playerJump", 0.4);
             updateScore();
 
@@ -268,8 +294,9 @@ class Platform {
                 this.broken = true;
                 playSound("woodPlatformBreakes", 1);
             } else if (this.hasSpring) {
-                player.ySpeed = -2000;
+                player.ySpeed = -2000 * scaleRatio;
                 enemyDisabled = true;
+                playSound("launchPlatform", 0.4);
             }
         }
 
@@ -283,7 +310,7 @@ class Platform {
 
         if (player.ySpeed === 0) {
             currentPlayerFace = "default";
-        } else if (player.ySpeed < -500) {
+        } else if (player.ySpeed < -500 * scaleRatio) {
             currentPlayerFace = "shocked";
         }
 
@@ -415,7 +442,7 @@ function startNewGame() {
     platforms = [];
     enemies = [];
     // The start position x-axis, y-axis, and radius size of the player.
-    player = new Player(300, 400, playerRadius);
+    player = new Player(playerStartX, playerStartY, playerRadius);
     generateBackground();
     generateplatforms();
     generateEnemies();
@@ -439,22 +466,22 @@ function generateplatforms() {
             * (canvas.width - platformWidth)), platformY, image);
 
         platforms.push(ob);
-        platformY -= 100;
+        platformY -= 100 * scaleRatio;
     }
 
-    platforms[0].width = 1000;
+    platforms[0].width = 1000 * scaleRatio;
     platforms[0].x = 0;
     platforms[0].chance = -1;
-    platforms[0].height = 800;
+    platforms[0].height = 800 * scaleRatio;
     console.log(platforms);
 }
 
 // Generates the platforms.
 function generateEnemies() {
     if (level === 0) {
-        enemyY = canvas.height - 400;
+        enemyY = canvas.height - 400 * scaleRatio;
     } else {
-        enemyY = enemies[enemies.length - 1].y - 400;
+        enemyY = enemies[enemies.length - 1].y - 400 * scaleRatio;
     }
     const numberOfEnemies = 20;
 
@@ -632,11 +659,15 @@ function getDistance(x1, y1, x2, y2) {
 function playSound(audio, soundVolume) { // Plays sounds based on method call strings
     const playerJump = "../sounds/SFX_Jump_42.wav";
     const woodPlatformBreakes = "../sounds/stick-breaking.wav";
+    const launchPlatform = "../sounds/mixkit-fast-rocket-whoosh.wav";
     if (audio === "playerJump") {
         audio = new Audio(playerJump);
         audio.volume = soundVolume;
     } else if (audio === "woodPlatformBreakes") {
         audio = new Audio(woodPlatformBreakes);
+        audio.volume = soundVolume;
+    } else if (audio === "launchPlatform") {
+        audio = new Audio(launchPlatform);
         audio.volume = soundVolume;
     }
     audio.play("");
@@ -789,7 +820,6 @@ async function findUser() {
 async function appendHighscores() {
     const appendableHighscores = await getFromDatabase() || undefined;
     highscoreList.innerHTML = "";
-    kindlyHighscoreList.innerHTML = "";
     if (appendableHighscores !== undefined) {
         appendableHighscores.forEach((user) => {
             const userToken = localStorage.getItem("user");
@@ -814,23 +844,7 @@ async function appendHighscores() {
             highscoreItem.appendChild(highscoreName);
             highscoreItem.appendChild(highscoreScore);
             highscoreList.appendChild(highscoreItem);
-            kindlyHighscoreList.appendChild(highscoreItem.cloneNode(true)); // !!! To remove before release.
         });
-        const bestPlayerImage = document.createElement("img");
-        const bestPlayerContainer = document.getElementById("best-player-container");
-        const bestPlayerItem = document.createElement("p");
-
-        bestPlayerContainer.innerHTML = "";
-        bestPlayerImage.src = "../assets/star.png";
-        bestPlayerImage.classList.add("top-player__star");
-
-        const bestUser = appendableHighscores[0].username;
-        /* const bestScore = appendableHighscores[0].highScore; */
-
-        bestPlayerItem.innerHTML = bestUser;
-
-        bestPlayerContainer.appendChild(bestPlayerImage);
-        bestPlayerContainer.appendChild(bestPlayerItem);
     }
 
     function changeUsername() {
