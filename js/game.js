@@ -500,7 +500,6 @@ function updateGame() {
 
     now = performance.now();
     delta = now - then;
-    console.log(delta, interval, "delta", "interval");
     if (delta > interval) {
         // update time stuffs
 
@@ -777,12 +776,14 @@ async function findUser() {
     let userStoredHighscore;
     const userToken = localStorage.getItem("user");
     const storedHighscores = await getFromDatabase();
-    if (storedHighscores === undefined) {
+    console.log(storedHighscores, "storedHighscores");
+    if (storedHighscores === undefined || storedHighscores === null || storedHighscores === []) {
         console.log("No highscores found");
         highScore = 0;
-    } else if (userStoredHighscore === storedHighscores.find((user) => user.id === userToken)) {
+    } else {
         userStoredHighscore = storedHighscores.find((user) => user.id === userToken);
         highScore = userStoredHighscore.highScore;
+        console.log("foundUser and got highscore");
     }
 }
 
