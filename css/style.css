@@ -4,6 +4,7 @@ body {
   width: 100vw;
   display: flex;
   align-items: center;
+  overflow: hidden;
 }
 
 /* ===== Scrollbar CSS ===== */
