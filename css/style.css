@@ -31,31 +31,24 @@ body {
 canvas {
   border-radius: var(--border-radius-container);
   z-index: 1;
-}
-
-.game-window {
-  width: 800px;
-  height: 800px;
-  background-color: var(--blue-ribbon);
-  margin: auto;
-  position: relative;
-  border-radius: 1rem;
-  box-shadow: 1px -1px 16px 3px rgba(0, 0, 0, 0.75);
-  -webkit-box-shadow: 1px -1px 16px 3px rgba(0, 0, 0, 0.75);
-  -moz-box-shadow: 1px -1px 16px 3px rgba(0, 0, 0, 0.75);
-  z-index: 1;
+  width: 100%;
+  height:100%;
 }
 
 .game-window {
   font-family: var(--font-family);
-  width: 600px;
-  height: 600px;
+  width: 100%;
+  height: 100%;
   border-radius: var(--border-radius-container);
+  background-color: var(--blue-ribbon);
+  margin: auto;
+  position: relative;
+  z-index: 1;
 }
 
 .game-window__menu {
-  width: 600px;
-  height: 600px;
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
