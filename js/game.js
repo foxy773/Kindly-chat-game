@@ -69,6 +69,9 @@ const WORLD_HEIGHT = 600;
 const scaleRatio = setPixelToWorldScale();
 console.log(scaleRatio, "SCALE RATIO");
 
+canvas.width = WORLD_WIDTH * scaleRatio;
+canvas.height = WORLD_HEIGHT * scaleRatio;
+
 // Player / Character attributes.
 let player;
 let platforms = [];
@@ -164,9 +167,9 @@ class Cloud {
     }
 
     update() {
-        this.x -= this.xSpeed;
-        if (clouds.every((cloud) => cloud.x < -400)) {
-            this.x = canvas.width + 100;
+        this.x -= this.xSpeed * scaleRatio;
+        if (clouds.every((cloud) => cloud.x < -400 * scaleRatio)) {
+            this.x = canvas.width + (100 * scaleRatio);
         }
     }
 }
@@ -179,25 +182,25 @@ class Player {
         this.r = r;
         this.width = playerWidth;
         this.height = playerHeight;
-        this.ySpeed = 1;
+        this.ySpeed = 3 * scaleRatio;
         this.xSpeed = 0;
     }
 
     show() {
         // Draw a circle at the player's position / makes the player a circle.
         c.beginPath();
-        c.arc(this.x + 15, this.y, this.r, 0, (2 * Math.PI), false);
+        c.arc(this.x + 15 * scaleRatio, this.y, this.r, 0, (2 * Math.PI), false);
         c.fillStyle = "#1cd300"; // Kindly green
 
         c.closePath();
         c.fill();
         c.stroke();
         if (currentPlayerFace === "default") {
-            c.drawImage(playerFace[0].image, this.x + 5, this.y - 10, this.height, this.width);
+            c.drawImage(playerFace[0].image, this.x + 5 * scaleRatio, this.y - 10 * scaleRatio, this.height, this.width);
         } else if (currentPlayerFace === "hurt") {
-            c.drawImage(playerFace[1].image, this.x + 5, this.y - 10, this.height, this.width);
+            c.drawImage(playerFace[1].image, this.x + 5 * scaleRatio, this.y - 10 * scaleRatio, this.height, this.width);
         } else if (currentPlayerFace === "shocked") {
-            c.drawImage(playerFace[2].image, this.x + 5, this.y - 10, this.height, this.width);
+            c.drawImage(playerFace[2].image, this.x + 5 * scaleRatio, this.y - 10 * scaleRatio, this.height, this.width);
         }
     }
 
@@ -267,12 +270,12 @@ class Platform {
 
     update() {
         // Removes the platforms that are below the player and out of frame
-        if (this.y > canvas.height + 150) {
+        if (this.y > canvas.height + (150 * scaleRatio)) {
             this.visible = false;
         }
 
         // If the platform is above the player.
-        if (player.y < this.y - 21) {
+        if (player.y < this.y - (21 * scaleRatio)) {
             this.wasAbove = true;
         }
 
@@ -308,7 +311,7 @@ class Platform {
             /*  console.log("Generate new platforms", this.ySpeed, "ySpeed") */
         }
 
-        if (player.ySpeed === 0) {
+        if (player.ySpeed >= 0) {
             currentPlayerFace = "default";
         } else if (player.ySpeed < -500 * scaleRatio) {
             currentPlayerFace = "shocked";
@@ -326,8 +329,8 @@ class Enemy {
         this.width = enemyWidth;
         this.height = enemyHeight;
         this.color = "red";
-        this.ySpeed = 1;
-        this.xSpeed = 6;
+        this.ySpeed = 3 * scaleRatio;
+        this.xSpeed = 6 * scaleRatio;
         this.visible = true;
         /* this.moving = true;   */
         this.wasAbove = false;
@@ -341,19 +344,6 @@ class Enemy {
     }
 
     show() {
-        if (this.visible && enemyDisabled === false) {
-            this.color = "red";
-        } else if (enemyDisabled && this.visible) {
-            this.color = "blue";
-        } /* else if (this.visible === false) {
-            this.color = "black"
-        } */
-        /* c.beginPath();
-        c.arc(this.x + 15, this.y, this.r, 0, (2 * Math.PI), false); */
-        // Draw a circle at the player's position / makes the player a circle.
-        /* c.fillStyle = this.color; */
-        /* c.closePath();
-        c.fill(); */
         if (enemyDisabled === false) {
             c.translate(this.x, this.y);
             c.rotate(this.rotation);
@@ -383,12 +373,12 @@ class Enemy {
 
     update() {
         // Removes the enemies that are below the player and out of frame
-        if (this.y > canvas.height + 200) {
+        if (this.y > canvas.height + (200 * scaleRatio)) {
             this.visible = false;
         }
 
         // If the enemy is above the player.
-        if (player.y < this.y - 21) {
+        if (player.y < this.y - (21 * scaleRatio)) {
             this.wasAbove = true;
         }
 
@@ -403,9 +393,9 @@ class Enemy {
         if (this.moving && enemyDisabled === false) {
             this.x += this.xSpeed;
             if (this.x > canvas.width - this.width) {
-                this.xSpeed -= 6;
+                this.xSpeed -= 6 * scaleRatio;
             } else if (this.x < 0) {
-                this.xSpeed = 6;
+                this.xSpeed = 6 * scaleRatio;
             }
         }
         /* console.log(getDistance(this.x, this.y, player.x, player.y)); */
@@ -479,9 +469,9 @@ function generateplatforms() {
 // Generates the platforms.
 function generateEnemies() {
     if (level === 0) {
-        enemyY = canvas.height - 400 * scaleRatio;
+        enemyY = canvas.height - (400 * scaleRatio);
     } else {
-        enemyY = enemies[enemies.length - 1].y - 400 * scaleRatio;
+        enemyY = enemies[enemies.length - 1].y - (400 * scaleRatio);
     }
     const numberOfEnemies = 20;
 
@@ -489,7 +479,7 @@ function generateEnemies() {
     for (let i = 0; i < numberOfEnemies; i += 1) {
         const en = new Enemy(Math.floor(Math.random() * (canvas.width - enemyWidth)), enemyY);
         enemies.push(en);
-        enemyY -= 100 * (platforms.length / numberOfEnemies);
+        enemyY -= 100 * (platforms.length / numberOfEnemies) * scaleRatio;
     }
 }
 
@@ -501,8 +491,8 @@ function generateClouds() {
     // Random x-axis position between 0 and 600.
     for (let i = 0; i < numberOfClouds; i += 1) {
         const cl = new Cloud(
-            getRandomNumber(canvas.width - 500, canvas.width + 5000),
-            getRandomNumber(0 - canvas.height, canvas.height + 300),
+            getRandomNumber(canvas.width - 500, canvas.width + (5000 * scaleRatio)),
+            getRandomNumber(0 - canvas.height, canvas.height + (300 * scaleRatio)),
             cloudHeight,
             cloudWidth,
             getRandomNumber(cloudMinSpeed, cloudMaxSpeed),
@@ -527,7 +517,7 @@ function updateGame() {
 
     now = performance.now();
     delta = now - then;
-    console.log(delta, interval, "delta", "interval");
+/*     console.log(delta, interval, "delta", "interval"); */
     if (delta > interval) {
         // update time stuffs
 
@@ -583,10 +573,10 @@ function draw() {
 
 function updateItems() {
     player.update();
-    player.ySpeed += gravity * 10;
+    player.ySpeed += gravity * 10 * scaleRatio;
 
     lastIndex = platforms.map((platform) => platform.visible).lastIndexOf(false);
-    if (platforms[lastIndex]?.y < player.y - 500 || platforms[0].y < player.y - 500) {
+    if (platforms[lastIndex]?.y < player.y - 500 * scaleRatio || platforms[0].y < player.y - 500 * scaleRatio) {
         gameOver();
     }
 }
@@ -680,19 +670,19 @@ const updateScore = () => {
 
 function drawScores() {
     //  Score
-    c.font = "60px IBMPlexSans-Bold";
+    c.font = `${60 * scaleRatio}px IBMPlexSans-Bold`;
     c.fillStyle = "orange";
     c.textAlign = "center";
-    c.lineWidth = 4;
-    c.fillText(score, canvas.width / 2, 50);
-    c.strokeText(score, canvas.width / 2, 50);
+    c.lineWidth = 4 * scaleRatio;
+    c.fillText(score, canvas.width / 2, 50 * scaleRatio);
+    c.strokeText(score, canvas.width / 2, 50 * scaleRatio);
     //  HighScore
-    c.font = "30px IBMPlexSans-Bold";
+    c.font = `${30 * scaleRatio}px IBMPlexSans-Bold`;
     c.fillStyle = "yellow";
     c.textAlign = "center";
-    c.lineWidth = 2;
-    c.fillText(highScore, canvas.width / 2, 100);
-    c.strokeText(highScore, canvas.width / 2, 100);
+    c.lineWidth = 2 * scaleRatio;
+    c.fillText(highScore, canvas.width / 2, 100 * scaleRatio);
+    c.strokeText(highScore, canvas.width / 2, 100 * scaleRatio);
 }
 document.onkeydown = keyDown;
 document.onkeyup = keyUp;
