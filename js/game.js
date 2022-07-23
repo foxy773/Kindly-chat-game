@@ -61,7 +61,7 @@ if (gameWindow.classList.contains("hidden")) {
         gameMenu.classList.add("hidden");
         window.requestAnimationFrame(updateGame);
         startNewGame();
-        /* backgroundMusic.play(); */
+        backgroundMusic.play();
     });
 }
 
