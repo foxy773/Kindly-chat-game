@@ -52,6 +52,7 @@ if (gameWindow.classList.contains("hidden")) {
         gameMenu.classList.add("hidden");
         window.requestAnimationFrame(updateGame);
         startNewGame();
+        backgroundMusic.play();
     });
 }
 
@@ -111,7 +112,6 @@ const music = "../sounds/Bicycle.mp3";
 const backgroundMusic = new Audio(music);
 backgroundMusic.volume = 1;
 backgroundMusic.loop = true;
-backgroundMusic.play();
 /* } */
 
 class Cloud {
