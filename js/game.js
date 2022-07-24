@@ -487,7 +487,7 @@ function generateEnemies() {
     for (let i = 0; i < numberOfEnemies; i += 1) {
         const en = new Enemy(Math.floor(Math.random() * (canvas.width - enemyWidth)), enemyY);
         enemies.push(en);
-        enemyY -= 100 * (platforms.length / numberOfEnemies) * scaleRatio;
+        enemyY -= 400 /* * (platforms.length / numberOfEnemies) */ * scaleRatio;
     }
 }
 
