@@ -91,7 +91,8 @@ let platformY;
 let enemies = [];
 let enemyY;
 let clouds = [];
-let level;
+let startGenerationPlatforms = true;
+let startGenerationEnemies = true;
 const playerRadius = 20 * scaleRatio;
 
 const playerHeight = playerRadius;
@@ -321,7 +322,6 @@ class Platform {
         // Auto generates platforms and additions the level + 1
         // If the player is above the 10th platform from the bottom.
         if (player.y < platforms[platforms.length - 10].y) {
-            level += 1;
             generateplatforms();
             /*  console.log("Generate new platforms", this.ySpeed, "ySpeed") */
         }
@@ -425,7 +425,7 @@ class Enemy {
 
         // Auto generates platforms and additions the level + 1
         // If the player is above the 10th platform from the bottom.
-        if (player.y < enemies[enemies.length - 1].y) {
+        if (player.y < enemies[enemies.length - 5].y) {
             generateEnemies();
         }
 
@@ -443,7 +443,8 @@ function startNewGame() {
     findUser();
     appendHighscores();
     score = 0;
-    level = 0;
+    startGenerationPlatforms = true;
+    startGenerationEnemies = true;
     platforms = [];
     enemies = [];
     // The start position x-axis, y-axis, and radius size of the player.
@@ -457,8 +458,9 @@ function startNewGame() {
 
 // Generates the platforms.
 function generateplatforms() {
-    if (level === 0) {
+    if (startGenerationPlatforms) {
         platformY = canvas.height;
+        startGenerationPlatforms = false;
     } else {
         platformY = platforms[platforms.length - 1].y;
     }
@@ -483,8 +485,9 @@ function generateplatforms() {
 
 // Generates the platforms.
 function generateEnemies() {
-    if (level === 0) {
+    if (startGenerationEnemies) {
         enemyY = canvas.height - (400 * scaleRatio);
+        startGenerationEnemies = false;
     } else {
         enemyY = enemies[enemies.length - 1].y - (400 * scaleRatio);
     }
