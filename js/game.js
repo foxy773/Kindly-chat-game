@@ -353,7 +353,7 @@ class Enemy {
 
     show() {
         if (enemyDisabled === false) {
-            c.translate(this.x, this.y);
+            c.translate(this.x + 15, this.y);
             c.rotate(this.rotation);
             c.translate(-(this.x), -(this.y));
             c.drawImage(images.enemy[0], (this.x - this.r), (this.y - this.r), this.width, this.height);
