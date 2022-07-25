@@ -15,11 +15,6 @@ document.ontouchmove = function (event) {
     event.preventDefault();
 };
 
-canvas.addEventListener("touchmove", (e) => {
-    e.preventDefault();
-    /* runMouseMoveEvent(e); */
-});
-
 function createImage(path) {
     const image = new Image();
     image.src = path;
@@ -78,6 +73,11 @@ if (gameWindow.classList.contains("hidden")) {
         }
     });
 }
+
+canvas.addEventListener("touchmove", (e) => {
+    e.preventDefault();
+    /* runMouseMoveEvent(e); */
+});
 
 window.onload = (() => {
     appendHighscores();
