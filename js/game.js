@@ -78,10 +78,6 @@ window.onload = (() => {
     appendHighscores();
 });
 
-canvas.addEventListener("dblclick", (e) => {
-    e.preventDefault();
-});
-
 // Global Variables.
 // Scaling the canvas to the screen.
 const WORLD_WIDTH = 600;
