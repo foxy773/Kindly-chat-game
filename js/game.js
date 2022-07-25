@@ -611,6 +611,8 @@ function keyUp(e) {
     if (e.keyCode === 39 || e.keyCode === 37
         || e.keyCode === 68 || e.keyCode === 65) { // Left arrow key, Right arrow key, A key, D key
         player.xSpeed = 0;
+    } else if (e.keyCode === 27 || e.keyCode === 13 || e.keyCode === 32) {
+        togglePause();
     }
 }
 
