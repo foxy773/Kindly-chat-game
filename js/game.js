@@ -79,7 +79,6 @@ const WORLD_WIDTH = 600;
 const WORLD_HEIGHT = 600;
 
 const scaleRatio = setPixelToWorldScale();
-console.log(scaleRatio, "SCALE RATIO");
 
 canvas.width = WORLD_WIDTH * scaleRatio;
 canvas.height = WORLD_HEIGHT * scaleRatio;
@@ -413,15 +412,11 @@ class Enemy {
                 this.xSpeed = 6 * scaleRatio;
             }
         }
-        /* console.log(getDistance(this.x, this.y, player.x, player.y)); */
-        /* console.log((1 / (distanceBetweenPlayerEnemy)).toFixed(10)) */
-        /* sawSound.volume = (1 / (distanceBetweenPlayerEnemy)).toFixed(2); */
-
-        if ((player.y > this.y - 100 && player.y < this.y + 100)
+        // if the player is in a certain range of the enemy.
+        /* if ((player.y > this.y - 100 && player.y < this.y + 100)
             && player.x > this.x - 100 && player.x < this.x + 100
             && this.visible === true && enemyDisabled === false) {
-            /* console.log(sawVolume); */
-        }
+        } */
 
         // Auto generates platforms and additions the level + 1
         // If the player is above the 10th platform from the bottom.
@@ -875,10 +870,10 @@ async function appendHighscores() {
 }
 
 const audioSwitch = document.querySelector("#audio-on-off");
-const audioIcon = document.querySelector(".audio-controller__audio-image");
+const audioIcon = document.querySelector(".menu-bar__audio-image");
 
 const musicSwitch = document.querySelector("#music-on-off");
-const musicIcon = document.querySelector(".audio-controller__music-image");
+const musicIcon = document.querySelector(".menu-bar__music-image");
 
 function toggleAudio() {
     if (audioEnabled) {

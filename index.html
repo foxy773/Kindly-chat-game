@@ -38,19 +38,25 @@
             </ul>
         </div>
         <div class="game-window__game hidden">
-            <div class="game__audio-controller">
-                <div class="audio-controller__button-container">
-                    <button class="audio-controller__audio-button on nooutline" id="audio-on-off">
-                        <img class="audio-controller__audio-image" src="./assets/audio-on.png" alt="">
+            <div class="game__menu-bar">
+                <div class="menu-bar__pause">
+                    <button class="pause__button" id="pause-game">PAUSE</button>
+                </div>
+                <div class="menu-bar__button-container">
+                    <button class="menu-bar__audio-button on nooutline" id="audio-on-off">
+                        <img class="menu-bar__audio-image" src="./assets/audio-on.png" alt="">
                     </button>
-                    <button class="audio-controller__music-button on nooutline" id="music-on-off">
-                        <img class="audio-controller__music-image" src="./assets/music-on.png" alt="">
+                    <button class="menu-bar__music-button on nooutline" id="music-on-off">
+                        <img class="menu-bar__music-image" src="./assets/music-on.png" alt="">
                     </button>
                 </div>
             </div>
             <div class="game__mobile-controller">
                 <div class="mobile-controller__left" id="mobile-touch-left"></div>
                 <div class="mobile-controller__right" id="mobile-touch-right"></div>
+            </div>
+            <div class="game__pause-container">
+
             </div>
             <canvas class="" id="game"></canvas>
         </div>
