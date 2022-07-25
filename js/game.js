@@ -11,6 +11,15 @@ if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
     }, { passive: false });
 }
 
+document.ontouchmove = function (event) {
+    event.preventDefault();
+};
+
+canvas.addEventListener("touchmove", (e) => {
+    e.preventDefault();
+    /* runMouseMoveEvent(e); */
+});
+
 function createImage(path) {
     const image = new Image();
     image.src = path;
@@ -549,8 +558,8 @@ function updateGame() {
         then = now - (delta % interval);
         /* console.log(then, "then"); */
         if (!gamePaused) {
-        draw();
-        updateItems();
+            draw();
+            updateItems();
         }
     }
 
@@ -686,8 +695,8 @@ function playSound(audio, soundVolume) { // Plays sounds based on method call st
         audio.volume = soundVolume;
     }
     if (audioEnabled) {
-    audio.play("");
-}
+        audio.play("");
+    }
 }
 
 const updateScore = () => {
