@@ -255,8 +255,11 @@ canvas {
   justify-self: center;
   width: 20%;
   height: 20%;
-  background-color: #CD7F32;
   z-index: 20;
+  background-image: url('../assets/pause.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100%;
 }
 
 .hidden {

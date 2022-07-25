@@ -61,7 +61,7 @@ if (gameWindow.classList.contains("hidden")) {
         gameMenu.classList.add("hidden");
         window.requestAnimationFrame(updateGame);
         startNewGame();
-        
+
         if (musicEnabled) {
             backgroundMusic.play();
         } else {
@@ -134,6 +134,7 @@ let highScore = 0;
 let lastIndex;
 let audioEnabled = true;
 let musicEnabled = true;
+let gamePaused = false;
 
 setPixelToWorldScale();
 window.addEventListener("resize", setPixelToWorldScale);
@@ -154,7 +155,7 @@ function setPixelToWorldScale() {
 
 const music = "../sounds/Bicycle.mp3";
 const backgroundMusic = new Audio(music);
-backgroundMusic.volume = 1;
+backgroundMusic.volume = 0.5;
 backgroundMusic.loop = true;
 
 class Cloud {
@@ -301,7 +302,7 @@ class Platform {
             && player.ySpeed > 0
             && this.broken === false) {
             player.ySpeed = -400 * scaleRatio; // The player speed on the y-axis upon collision.
-            playSound("playerJump", 0.4);
+            playSound("playerJump", 0.5);
             updateScore();
 
             currentPlayerFace = "hurt";
@@ -313,7 +314,7 @@ class Platform {
             } else if (this.hasSpring) {
                 player.ySpeed = -2000 * scaleRatio;
                 enemyDisabled = true;
-                playSound("launchPlatform", 0.4);
+                playSound("launchPlatform", 0.5);
             }
         }
 
@@ -529,7 +530,7 @@ function updateGame() {
 
     now = performance.now();
     delta = now - then;
-    
+
     if (delta > interval) {
         // update time stuffs
 
@@ -547,8 +548,10 @@ function updateGame() {
 
         then = now - (delta % interval);
         /* console.log(then, "then"); */
+        if (!gamePaused) {
         draw();
         updateItems();
+        }
     }
 
     /* console.log(fps) */
@@ -662,6 +665,8 @@ function playSound(audio, soundVolume) { // Plays sounds based on method call st
     const playerJump = "../sounds/SFX_Jump_42.wav";
     const woodPlatformBreakes = "../sounds/stick-breaking.wav";
     const launchPlatform = "../sounds/mixkit-fast-rocket-whoosh.wav";
+    const pauseGame = "../sounds/pause-game.mp3";
+    const resumeGame = "../sounds/resume-game.mp3";
     if (audio === "playerJump") {
         audio = new Audio(playerJump);
         audio.volume = soundVolume;
@@ -670,6 +675,12 @@ function playSound(audio, soundVolume) { // Plays sounds based on method call st
         audio.volume = soundVolume;
     } else if (audio === "launchPlatform") {
         audio = new Audio(launchPlatform);
+        audio.volume = soundVolume;
+    } else if (audio === "pauseGame") {
+        audio = new Audio(pauseGame);
+        audio.volume = soundVolume;
+    } else if (audio === "resumeGame") {
+        audio = new Audio(resumeGame);
         audio.volume = soundVolume;
     }
     if (audioEnabled) {
@@ -916,3 +927,29 @@ musicSwitch.addEventListener("click", (e) => {
     }
     console.log("music clicked", e);
 });
+
+const pauseGameButton = document.querySelector("#pause-game");
+const pauseGameContainer = document.querySelector(".game__pause-container");
+
+pauseGameButton.addEventListener("click", () => {
+    togglePause();
+});
+
+function togglePause() {
+    if (gamePaused) {
+        gamePaused = false;
+        pauseGameButton.innerHTML = "Pause";
+        pauseGameContainer.classList.add("hidden");
+        if (musicEnabled) {
+            backgroundMusic.play();
+        } else if (audioEnabled) {
+            playSound("resumeGame", 0.5);
+        }
+    } else {
+        gamePaused = true;
+        pauseGameButton.innerHTML = "Resume";
+        pauseGameContainer.classList.remove("hidden");
+        backgroundMusic.pause();
+        playSound("pauseGame", 0.5);
+    }
+}
