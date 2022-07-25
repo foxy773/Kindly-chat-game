@@ -61,7 +61,11 @@ if (gameWindow.classList.contains("hidden")) {
         gameMenu.classList.add("hidden");
         window.requestAnimationFrame(updateGame);
         startNewGame();
-        backgroundMusic.play();
+        if (musicEnabled) {
+            backgroundMusic.play();
+        } else {
+            backgroundMusic.pause();
+        }
     });
 }
 
@@ -127,6 +131,8 @@ let gravity = 1;
 let score;
 let highScore = 0;
 let lastIndex;
+let audioEnabled = true;
+let musicEnabled = true;
 
 setPixelToWorldScale();
 window.addEventListener("resize", setPixelToWorldScale);
@@ -149,6 +155,7 @@ const music = "../sounds/Bicycle.mp3";
 const backgroundMusic = new Audio(music);
 backgroundMusic.volume = 1;
 backgroundMusic.loop = true;
+
 /* } */
 
 class Cloud {
@@ -668,7 +675,9 @@ function playSound(audio, soundVolume) { // Plays sounds based on method call st
         audio = new Audio(launchPlatform);
         audio.volume = soundVolume;
     }
+    if (audioEnabled) {
     audio.play("");
+}
 }
 
 const updateScore = () => {
@@ -861,3 +870,52 @@ async function appendHighscores() {
         changeUsername();
     });
 }
+
+const audioSwitch = document.querySelector("#audio-on-off");
+const audioIcon = document.querySelector(".audio-controller__audio-image");
+
+const musicSwitch = document.querySelector("#music-on-off");
+const musicIcon = document.querySelector(".audio-controller__music-image");
+
+function toggleAudio() {
+    if (audioEnabled) {
+        audioSwitch.classList.remove("on");
+        audioSwitch.classList.add("off");
+        audioEnabled = false;
+        audioIcon.src = "./assets/audio-off.png";
+    } else {
+        audioSwitch.classList.remove("off");
+        audioSwitch.classList.add("on");
+        audioEnabled = true;
+        audioIcon.src = "./assets/audio-on.png";
+    }
+}
+
+function toggleMusic() {
+    if (musicEnabled) {
+        musicSwitch.classList.remove("on");
+        musicSwitch.classList.add("off");
+        musicEnabled = false;
+        musicIcon.src = "./assets/music-off.png";
+    } else {
+        musicSwitch.classList.remove("off");
+        musicSwitch.classList.add("on");
+        musicEnabled = true;
+        musicIcon.src = "./assets/music-on.png";
+    }
+}
+
+audioSwitch.addEventListener("click", (e) => {
+    toggleAudio();
+    console.log("audio clicked", e);
+});
+
+musicSwitch.addEventListener("click", (e) => {
+    toggleMusic();
+    if (musicEnabled) {
+        backgroundMusic.play();
+    } else {
+        backgroundMusic.pause();
+    }
+    console.log("music clicked", e);
+});

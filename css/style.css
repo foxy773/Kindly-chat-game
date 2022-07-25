@@ -210,6 +210,35 @@ canvas {
   z-index: 10;
 }
 
+.game__audio-controller {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  height: 4rem;
+  position: absolute;
+  z-index: 20;
+  padding: 1rem;
+}
+
+.audio-controller__button-container {
+  display: flex;
+  justify-content: space-between;
+  width: 20%;
+  height: 100%;
+}
+
+.audio-controller__audio-button, .audio-controller__music-button {
+  width: 100%;
+  height: 100%;
+  z-index: 20;
+  background-color: transparent;
+}
+
+.audio-controller__audio-image, .audio-controller__music-image {
+  width: auto;
+  height: 100%;
+}
+
 .hidden {
   display: none;
 }
