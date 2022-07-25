@@ -243,6 +243,10 @@ canvas {
   display: none;
 }
 
+.nooutline {
+  outline: none;
+}
+
 #game {
   width: 100%;
   height: 100%;
