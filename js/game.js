@@ -61,6 +61,7 @@ if (gameWindow.classList.contains("hidden")) {
         gameMenu.classList.add("hidden");
         window.requestAnimationFrame(updateGame);
         startNewGame();
+        
         if (musicEnabled) {
             backgroundMusic.play();
         } else {
@@ -155,8 +156,6 @@ const music = "../sounds/Bicycle.mp3";
 const backgroundMusic = new Audio(music);
 backgroundMusic.volume = 1;
 backgroundMusic.loop = true;
-
-/* } */
 
 class Cloud {
     constructor(x, y, width, height, xSpeed, image) {
@@ -530,7 +529,7 @@ function updateGame() {
 
     now = performance.now();
     delta = now - then;
-    /*     console.log(delta, interval, "delta", "interval"); */
+    
     if (delta > interval) {
         // update time stuffs
 
