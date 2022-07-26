@@ -519,6 +519,9 @@ function generateClouds() {
     }
 }
 
+let LEFT = false;
+let RIGHT = false;
+
 function generateBackground() {
     generateClouds();
 }
@@ -552,6 +555,15 @@ function updateGame() {
 
         then = now - (delta % interval);
         /* console.log(then, "then"); */
+
+        if (RIGHT) {
+            player.xSpeed = playerXSpeed;
+        } else if (LEFT) {
+            player.xSpeed = 0 - playerXSpeed;
+        } else {
+            player.xSpeed = 0;
+        }
+
         if (!gamePaused) {
             draw();
             updateItems();
@@ -604,18 +616,22 @@ function updateItems() {
 // If the button is pressed the player will move on the x-axis with the direction chosen.
 function keyDown(e) {
     if (e.keyCode === 39 || e.keyCode === 68) { // Right arrow key, or D key
-        player.xSpeed = playerXSpeed;
+        /* player.xSpeed = playerXSpeed; */
+        RIGHT = true;
     } else if (e.keyCode === 37 || e.keyCode === 65) { // Left arrow key, or A key
-        player.xSpeed = 0 - playerXSpeed;
+        /* player.xSpeed = 0 - playerXSpeed; */
+        LEFT = true;
     }
+    console.log(e);
 }
 
 // If the button is let go the x-axis speed of the player will halt.
 function keyUp(e) {
     if (e.keyCode === 39 || e.keyCode === 37
         || e.keyCode === 68 || e.keyCode === 65) { // Left arrow key, Right arrow key, A key, D key
-        player.xSpeed = 0;
-    } else if (e.keyCode === 27 || e.keyCode === 13 || e.keyCode === 32) {
+        LEFT = false;
+        RIGHT = false;
+    } else if (e.keyCode === 27 || e.keyCode === 13 || e.keyCode === 32) { // pause the game
         togglePause();
     }
 }
