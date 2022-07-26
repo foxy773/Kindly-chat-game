@@ -21,10 +21,9 @@
                 <p class="title__under-name">THE GAME</p>
             </div>
             <div class="menu__selection">
-                <button class="selection__button" id="start-game">START</button>
-                <button class="selection__button" id="show-rules">INSTRUCTIONS</button>
-                <button class="selection__button" id="change-username">CHANGE USERNAME</button>
-                <button class="selection__button" id="exit-game">EXIT</button>
+                <button class="selection__button" id="start-game">🎬 START</button>
+                <button class="selection__button" id="show-rules">📝 INSTRUCTIONS</button>
+                <button class="selection__button" id="change-username">✍️ CHANGE USERNAME</button>
             </div>
             <ul class="menu__score-board" id="highscore-list">
                                 <!-- <li class="score-board__item">
@@ -55,7 +54,19 @@
                 <div class="mobile-controller__left" id="mobile-touch-left"></div>
                 <div class="mobile-controller__right" id="mobile-touch-right"></div>
             </div>
-            <div class="game__pause-container hidden"></div>
+            <div class="game__pause-container hidden">
+                <div class="pause-container__content">
+                    <div class="pause-container__title">
+                        <p class="title__name">PAUSED</p>
+                    </div>
+                    <div class="pause-container__selection">
+                        <button class="selection__button paused-menu-button" id="paused-resume-game">🎬 RESUME</button>
+                        <button class="selection__button paused-menu-button" id="paused-show-rules">📝 INSTRUCTIONS</button>
+                        <button class="selection__button paused-menu-button" id="paused-change-username">✍️ CHANGE USERNAME</button>
+                        <button class="selection__button paused-menu-button" id="paused-to-main-menu">🛌 MAIN MENU</button>
+                    </div>
+                </div>
+            </div>
             <canvas class="" id="game"></canvas>
         </div>
         </div>

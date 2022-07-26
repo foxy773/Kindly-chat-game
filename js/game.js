@@ -439,8 +439,12 @@ class Enemy {
 
 // Starts a new game.
 function startNewGame() {
+    if (gamePaused) {
+        togglePause();
+    }
     findUser();
     appendHighscores();
+    gamePaused = false;
     score = 0;
     startGenerationPlatforms = true;
     startGenerationEnemies = true;
@@ -568,6 +572,8 @@ function updateGame() {
             draw();
             updateItems();
         }
+    } else {
+        console.log("FRAMEDROP!");
     }
 
     /* console.log(fps) */
@@ -860,6 +866,7 @@ async function appendHighscores() {
     const appendableHighscores = await getFromDatabase() || undefined;
     highscoreList.innerHTML = "";
     if (appendableHighscores !== undefined) {
+        let i = 0;
         appendableHighscores.forEach((user) => {
             const userToken = localStorage.getItem("user");
             // Create a new list item with a text node
@@ -871,35 +878,45 @@ async function appendHighscores() {
             highscoreName.classList.add("score-board__item-name");
             highscoreScore.classList.add("score-board__item-highscore");
 
-            highscoreName.innerHTML = user.username;
-            highscoreScore.innerHTML = user.highScore;
-
+            let you = "";
             if (user.id === userToken) {
-                highscoreName.innerHTML = `(You) ${user.username} :`;
-            } else {
-                highscoreName.innerHTML = `${user.username} :`;
+                you = "(You)";
             }
+
+            if (i === 0) {
+                highscoreName.textContent = `${you} 🥇 ${user.username}`;
+            } else if (i === 1) {
+                highscoreName.textContent = `${you} 🥈 ${user.username}`;
+            } else if (i === 2) {
+                highscoreName.textContent = `${you} 🥉 ${user.username}`;
+            } else {
+                highscoreName.textContent = `${i + 1}. ${you} ${user.username}`;
+            }
+
+            /* highscoreName.textContent = user.username; */
+            highscoreScore.textContent = user.highScore;
 
             highscoreItem.appendChild(highscoreName);
             highscoreItem.appendChild(highscoreScore);
             highscoreList.appendChild(highscoreItem);
+            i += 1;
         });
     }
-
-    function changeUsername() {
-        const db = getDatabase();
-        if (localStorage.getItem("user") !== null || localStorage.getItem("user") !== undefined) {
-            const newUsername = prompt("Please enter your username");
-            const userToken = localStorage.getItem("user");
-            updateUsername(userToken, newUsername, db);
-        } else {
-            alert("Please refresh the game to change your username");
-        }
-    }
-    changeUsernameButton.addEventListener("click", () => {
-        changeUsername();
-    });
 }
+
+function changeUsername() {
+    const db = getDatabase();
+    if (localStorage.getItem("user") !== null || localStorage.getItem("user") !== undefined) {
+        const newUsername = prompt("Please enter your username");
+        const userToken = localStorage.getItem("user");
+        updateUsername(userToken, newUsername, db);
+    } else {
+        alert("Please refresh the game to change your username");
+    }
+}
+changeUsernameButton.addEventListener("click", () => {
+    changeUsername();
+});
 
 const audioSwitch = document.querySelector("#audio-on-off");
 const audioIcon = document.querySelector(".menu-bar__audio-image");
@@ -951,10 +968,25 @@ musicSwitch.addEventListener("click", (e) => {
 });
 
 const pauseGameButton = document.querySelector("#pause-game");
+const resumeGameButton = document.querySelector("#paused-resume-game");
 const pauseGameContainer = document.querySelector(".game__pause-container");
+const goToMainMenuButton = document.querySelector("#paused-to-main-menu");
+const pausedChangeUsernameButton = document.querySelector("#paused-change-username");
 
 pauseGameButton.addEventListener("click", () => {
     togglePause();
+});
+
+resumeGameButton.addEventListener("click", () => {
+    togglePause();
+});
+
+goToMainMenuButton.addEventListener("click", () => {
+    goToMainMenu();
+});
+
+pausedChangeUsernameButton.addEventListener("click", () => {
+    changeUsername();
 });
 
 function togglePause() {
@@ -974,4 +1006,9 @@ function togglePause() {
         backgroundMusic.pause();
         playSound("pauseGame", 0.5);
     }
+}
+
+function goToMainMenu() {
+    gameWindow.classList.add("hidden");
+    gameMenu.classList.remove("hidden");
 }
