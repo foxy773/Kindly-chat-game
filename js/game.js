@@ -627,10 +627,10 @@ function keyDown(e) {
 
 // If the button is let go the x-axis speed of the player will halt.
 function keyUp(e) {
-    if (e.keyCode === 39 || e.keyCode === 37
-        || e.keyCode === 68 || e.keyCode === 65) { // Left arrow key, Right arrow key, A key, D key
-        LEFT = false;
+    if (e.keyCode === 39 || e.keyCode === 68) { // Left arrow key, Right arrow key, A key, D key
         RIGHT = false;
+    } else if (e.keyCode === 65 || e.keyCode === 37) {
+        LEFT = false;
     } else if (e.keyCode === 27 || e.keyCode === 13 || e.keyCode === 32) { // pause the game
         togglePause();
     }
@@ -640,19 +640,19 @@ const mobileTouchLeft = document.getElementById("mobile-touch-left");
 const mobileTouchRight = document.getElementById("mobile-touch-right");
 
 mobileTouchLeft.addEventListener("touchstart", () => {
-    player.xSpeed = 0 - playerXSpeed;
+    LEFT = true;
 });
 
 mobileTouchLeft.addEventListener("touchend", () => {
-    player.xSpeed = 0;
+    LEFT = false;
 });
 
 mobileTouchRight.addEventListener("touchstart", () => {
-    player.xSpeed = playerXSpeed;
+    RIGHT = true;
 });
 
 mobileTouchRight.addEventListener("touchend", () => {
-    player.xSpeed = 0;
+    RIGHT = false;
 });
 
 function gameOver() {
