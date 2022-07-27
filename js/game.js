@@ -56,12 +56,14 @@ const gameWindow = document.querySelector(".game-window__game");
 const startGameButton = document.querySelector("#start-game");
 const highscoreList = document.getElementById("highscore-list");
 const changeUsernameButton = document.getElementById("change-username");
+const gameMenuBar = document.querySelector(".game__menu-bar");
 
 const worldElem = document.querySelector("[data-world]");
 
 if (gameWindow.classList.contains("hidden")) {
     startGameButton.addEventListener("click", () => {
         gameWindow.classList.remove("hidden");
+        canvas.classList.remove("hidden");
         gameMenu.classList.add("hidden");
         window.requestAnimationFrame(updateGame);
         startNewGame();
@@ -402,7 +404,7 @@ class Enemy {
 
         // Collision Detection between player and enemies
         const distanceBetweenPlayerEnemy = getDistance(this.x, this.y, player.x, player.y);
-        /* console.log(yDistanceBetweenPlayerAndEnemy, "playerEnemy"); */
+
         if (distanceBetweenPlayerEnemy < this.r + player.r && this.visible === true && enemyDisabled === false) {
             gameOver();
             console.log("Died by enemy", this);
@@ -543,22 +545,7 @@ function updateGame() {
     delta = now - then;
 
     if (delta > interval) {
-        // update time stuffs
-
-        // Just `then = now` is not enough.
-        // Lets say we set fps at 10 which means
-        // each frame must take 100ms
-        // Now frame executes in 16ms (60fps) so
-        // the loop iterates 7 times (16*7 = 112ms) until
-        // delta > interval === true
-        // Eventually this lowers down the FPS as
-        // 112*10 = 1120ms (NOT 1000ms).
-        // So we have to get rid of that extra 12ms
-        // by subtracting delta (112) % interval (100).
-        // Hope that makes sense.
-
         then = now - (delta % interval);
-        /* console.log(then, "then"); */
 
         if (RIGHT) {
             player.xSpeed = playerXSpeed;
@@ -572,11 +559,7 @@ function updateGame() {
             draw();
             updateItems();
         }
-    } else {
-        console.log("FRAMEDROP!");
     }
-
-    /* console.log(fps) */
 }
 
 function draw() {
@@ -602,9 +585,6 @@ function draw() {
     }
 
     player.show();
-
-    /* console.log(lastIndex, "lastIndex"); */
-    /* console.log(score, "score"); */
     drawScores();
 }
 
@@ -628,7 +608,7 @@ function keyDown(e) {
         /* player.xSpeed = 0 - playerXSpeed; */
         LEFT = true;
     }
-    console.log(e);
+    /* console.log(e); */
 }
 
 // If the button is let go the x-axis speed of the player will halt.
@@ -637,7 +617,8 @@ function keyUp(e) {
         RIGHT = false;
     } else if (e.keyCode === 65 || e.keyCode === 37) {
         LEFT = false;
-    } else if (e.keyCode === 27 || e.keyCode === 13 || e.keyCode === 32) { // pause the game
+    } else if ((e.keyCode === 27 || e.keyCode === 13 || e.keyCode === 32)
+    && changeUsernamePrompt.classList.contains("hidden")) { // pause the game
         togglePause();
     }
 }
@@ -718,7 +699,6 @@ function playSound(audio, soundVolume) { // Plays sounds based on method call st
 
 const updateScore = () => {
     score = platforms.filter((platform) => platform.visible === false).length + 2;
-    console.log(score);
 };
 
 function drawScores() {
@@ -740,12 +720,12 @@ function drawScores() {
 document.onkeydown = keyDown;
 document.onkeyup = keyUp;
 
-// Gets a random number to be used to make an uid for each user.
-
+// Gets a random number between two numbers.
 function getRandomNumber(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
+// Generates a random uid for the user.
 const rand = () => Math.random(0).toString(36).substr(2);
 const token = (length) => (rand() + rand() + rand() + rand()).substr(0, length);
 
@@ -904,14 +884,48 @@ async function appendHighscores() {
     }
 }
 
+const changeUsernamePrompt = document.querySelector(".game__username-prompt");
+const changeUsernamePromptInput = document.querySelector("#username-input");
+
+const changeUsernamePromptSubmit = document.querySelector("#username-submit");
+const changeUsernamePromptCancel = document.querySelector("#username-cancel");
+
 function changeUsername() {
+    /* changeUsernamePromptInput.value = ""; */
+    if (changeUsernamePrompt.classList.contains("hidden")) {
+        changeUsernamePrompt.classList.remove("hidden");
+        gameMenu.classList.add("hidden");
+        gameWindow.classList.remove("hidden");
+        gameMenuBar.classList.add("hidden");
+    }
+
+    let newUsername = "";
+        const userToken = localStorage.getItem("user");
+
     const db = getDatabase();
     if (localStorage.getItem("user") !== null || localStorage.getItem("user") !== undefined) {
-        const newUsername = prompt("Please enter your username");
-        const userToken = localStorage.getItem("user");
-        updateUsername(userToken, newUsername, db);
+        changeUsernamePromptSubmit.addEventListener("click", () => {
+            changeUsernamePrompt.classList.add("hidden");
+        gameMenu.classList.remove("hidden");
+        gameWindow.classList.add("hidden");
+        gameMenuBar.classList.remove("hidden");
+        newUsername = changeUsernamePromptInput.value;
+        if (newUsername.length > 1 && newUsername.length <= 10) {
+            updateUsername(userToken, newUsername, db);
+        } else {
+            console.log("Username is too long or too short");
+        }
+        });
+
+        changeUsernamePromptCancel.addEventListener("click", () => {
+            changeUsernamePrompt.classList.add("hidden");
+        gameMenu.classList.remove("hidden");
+        gameWindow.classList.add("hidden");
+        gameMenuBar.classList.remove("hidden");
+        newUsername = changeUsernamePromptInput.value;
+        });
     } else {
-        alert("Please refresh the game to change your username");
+        console.log("Could not change username");
     }
 }
 changeUsernameButton.addEventListener("click", () => {
@@ -1011,4 +1025,5 @@ function togglePause() {
 function goToMainMenu() {
     gameWindow.classList.add("hidden");
     gameMenu.classList.remove("hidden");
+    canvas.classList.remove("hidden");
 }

@@ -7,6 +7,17 @@ body {
   overflow: hidden;
 }
 
+input {
+  border-radius: var(--border-radius-input);
+  text-align: center;
+  outline: 0;
+  /* border: 0.2rem solid var(--yellow-sunglow); */
+  padding: 0.5rem;
+  font-size: var(--font-size);
+  font-family: var(--font-family);
+  width: 100%;
+}
+
 canvas {
   border-radius: var(--border-radius-container);
   z-index: 1;
@@ -283,7 +294,67 @@ button:hover {
   background-color: var(--blue-ribbon);
 }
 
+.game__username-prompt {
+  width: 50%;
+  height: 35%;
+  position: absolute;
+  display: flex;
+  justify-self: center;
+  align-self: center;
+  position: absolute;
+  background-color: var(--game-menu-background);
+  padding: 1rem;
+  border-radius: var(--border-radius-textarea);
+  z-index: 100;
+}
 
+.username-prompt__content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.username-prompt__title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-family);
+  font-size: 2rem;
+  font-weight: BLACK;
+  color: var(--white);
+}
+
+.title__username {
+  font-family: var(--font-family);
+  font-size: 2rem;
+  font-weight: BLACK;
+  color: var(--white);
+}
+
+.username-prompt__input-container {
+  width: 80%;
+  height: 4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.username-prompt__input {
+  border-radius: 10rem;
+}
+
+.username-prompt__selection {
+  display: flex;
+  flex-direction: column;
+  padding-top: 1rem;
+  width: 80%;
+}
 
 .hidden {
   display: none;
@@ -301,6 +372,10 @@ button:hover {
 #paused-to-main-menu {
   background-color: var(--yellow-sunglow);
   color: black;
+}
+
+#username-cancel {
+  margin-top: 1rem;
 }
 
 #game {
