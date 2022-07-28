@@ -34,13 +34,14 @@
   }
 
   *::-webkit-scrollbar-track {
-    background: #313131;
+    background: #252525;
+	border-radius: 1rem;
   }
 
   *::-webkit-scrollbar-thumb {
     background-color: #ffffff;
-    border-radius: 1rem;
     border: 3px none #ffffff;
+	border-radius: 1rem;
   }
 
 button {
