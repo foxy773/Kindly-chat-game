@@ -112,11 +112,16 @@ let currentPlayerFace = "default";
 // platform / Platform attributes
 const platformHeight = 15 * scaleRatio;
 const platformWidth = 60 * scaleRatio;
+const distanceBetweenPlatforms = 100 * scaleRatio;
+const numberOfplatforms = 100;
+const firstPlatformWidth = 1000 * scaleRatio;
+const firstPlatformHeight = 800 * scaleRatio;
 
 // Enemies / Enemy attributes
 const enemyRadius = 20 * scaleRatio;
 const enemyHeight = enemyRadius * 2;
 const enemyWidth = enemyRadius * 2;
+const enemyDistanceBetween = 400 * scaleRatio;
 let enemyDisabled = false;
 
 // Clouds / Cloud attributes
@@ -124,8 +129,17 @@ const cloudHeight = 100 * scaleRatio;
 const cloudWidth = 200 * scaleRatio;
 const cloudMinSpeed = 1;
 const cloudMaxSpeed = 1.2;
+const cloudDistanceBetween = -400 * scaleRatio;
+const numberOfClouds = 20;
 
 // General game attributes
+const fps = 60;
+const interval = 1000 / fps;
+let now;
+let then = performance.now();
+let delta;
+let LEFT = false;
+let RIGHT = false;
 let gravity = 1;
 let score;
 let highScore = 0;
@@ -135,7 +149,15 @@ let musicEnabled = true;
 let gamePaused = false;
 const defaultJumpHeight = -400 * scaleRatio;
 const springJumpHeight = -2000 * scaleRatio;
+const maximumUsernameLength = 10;
+const minimumUsernameLength = 1;
+const defaultUsername = "Anonymous";
 
+// Audio
+const music = "../sounds/Bicycle.mp3";
+const backgroundMusic = new Audio(music);
+backgroundMusic.volume = 0.5;
+backgroundMusic.loop = true;
 
 setPixelToWorldScale();
 window.addEventListener("resize", setPixelToWorldScale);
@@ -154,11 +176,6 @@ function setPixelToWorldScale() {
 
     return worldToPixelScale;
 }
-
-const music = "../sounds/Bicycle.mp3";
-const backgroundMusic = new Audio(music);
-backgroundMusic.volume = 0.5;
-backgroundMusic.loop = true;
 
 class Cloud {
     constructor(x, y, width, height, xSpeed, image) {
@@ -185,7 +202,7 @@ class Cloud {
 
     update() {
         this.x -= this.xSpeed * scaleRatio;
-        if (clouds.every((cloud) => cloud.x < -400 * scaleRatio)) {
+        if (clouds.every((cloud) => cloud.x < cloudDistanceBetween)) {
             this.x = canvas.width + (100 * scaleRatio);
         }
     }
@@ -348,7 +365,6 @@ class Enemy {
         this.ySpeed = 3 * scaleRatio;
         this.xSpeed = 6 * scaleRatio;
         this.visible = true;
-        /* this.moving = true;   */
         this.wasAbove = false;
         this.rotating = true;
         this.rotation = 90;
@@ -372,19 +388,6 @@ class Enemy {
             c.drawImage(images.enemy[1], this.x, this.y, this.width, this.height);
             c.setTransform(1, 0, 0, 1, 0, 0);
         }
-
-        /* ctx.setTransform(1, 0, 0, 1, x, y); // set the scale and the center pos
-        ctx.rotate(rot); // set the rotation
-        ctx.drawImage(img, -img.width /2, -img.height /2); // draw image offset
-                                                           // by half its width
-                                                           // and heigth
-        ctx.setTransform(1, 0, 0, 1, 0, 0); // restore default transform */
-
-        /* if (enemyDisabled && this.visible) {
-            this.visible = false;
-        } else if (enemyDisabled === false) {
-            this.visible = true;
-        } */
     }
 
     update() {
@@ -414,11 +417,6 @@ class Enemy {
                 this.xSpeed = 6 * scaleRatio;
             }
         }
-        // if the player is in a certain range of the enemy.
-        /* if ((player.y > this.y - 100 && player.y < this.y + 100)
-            && player.x > this.x - 100 && player.x < this.x + 100
-            && this.visible === true && enemyDisabled === false) {
-        } */
 
         // Auto generates platforms and additions the level + 1
         // If the player is above the 10th platform from the bottom.
@@ -426,11 +424,10 @@ class Enemy {
             generateEnemies();
         }
 
-        /* Increases the fall speed/velocity of the enemy */
+        // Counteracts the falling of the player to help the illusion of the player jumping
         this.y -= player.ySpeed * 0.03;
-        /* player.ySpeed += (gravity / (level +1)); */
 
-        /* this.x += this.xSpeed; */
+        // Rotates the enemy
         this.rotation += 0.1;
     }
 }
@@ -462,9 +459,8 @@ function generateplatforms() {
     if (startGenerationPlatforms) {
         platformY = canvas.height;
     } else {
-        platformY = platforms[platforms.length - 1].y - 100 * scaleRatio;
+        platformY = platforms[platforms.length - 1].y - distanceBetweenPlatforms;
     }
-    const numberOfplatforms = 100;
     for (let i = 0; i < numberOfplatforms; i += 1) {
         const image = images.platforms;
 
@@ -473,14 +469,14 @@ function generateplatforms() {
             * (canvas.width - platformWidth)), platformY, image);
 
         platforms.push(ob);
-        platformY -= 100 * scaleRatio;
+        platformY -= distanceBetweenPlatforms;
     }
 
     if (startGenerationPlatforms) {
-        platforms[0].width = 1000 * scaleRatio;
+        platforms[0].width = firstPlatformWidth;
         platforms[0].x = 0;
         platforms[0].chance = -1;
-        platforms[0].height = 800 * scaleRatio;
+        platforms[0].height = firstPlatformHeight;
         startGenerationPlatforms = false;
     }
 
@@ -490,10 +486,10 @@ function generateplatforms() {
 // Generates the platforms.
 function generateEnemies() {
     if (startGenerationEnemies) {
-        enemyY = canvas.height - (400 * scaleRatio);
+        enemyY = canvas.height - enemyDistanceBetween;
         startGenerationEnemies = false;
     } else {
-        enemyY = enemies[enemies.length - 1].y - (400 * scaleRatio);
+        enemyY = enemies[enemies.length - 1].y - enemyDistanceBetween;
     }
     const numberOfEnemies = 20;
 
@@ -501,16 +497,11 @@ function generateEnemies() {
     for (let i = 0; i < numberOfEnemies; i += 1) {
         const en = new Enemy(Math.floor(Math.random() * (canvas.width - enemyWidth)), enemyY);
         enemies.push(en);
-        enemyY -= 400 /* * (platforms.length / numberOfEnemies) */ * scaleRatio;
+        enemyY -= enemyDistanceBetween;
     }
 }
 
 function generateClouds() {
-    /* const cloudX = canvas.width + 50 */
-
-    const numberOfClouds = 20;
-
-    // Random x-axis position between 0 and 600.
     for (let i = 0; i < numberOfClouds; i += 1) {
         const cl = new Cloud(
             getRandomNumber(canvas.width - 500, canvas.width + (5000 * scaleRatio)),
@@ -524,17 +515,9 @@ function generateClouds() {
     }
 }
 
-let LEFT = false;
-let RIGHT = false;
-
 function generateBackground() {
     generateClouds();
 }
-const fps = 60;
-let now;
-let then = performance.now();
-const interval = 1000 / fps;
-let delta;
 
 // Updates the game
 function updateGame() {
@@ -559,7 +542,6 @@ function updateGame() {
             updateItems();
         }
     } else {
-        console.log("delta", delta, "interval", interval);
         window.cancelAnimationFrame(updateGame);
     }
 }
@@ -567,9 +549,6 @@ function updateGame() {
 function draw() {
     c.fillStyle = "lightblue";
     c.fillRect(0, 0, canvas.width, canvas.height);
-
-    // player
-    // platforms
 
     for (let i = 0; i < clouds.length; i += 1) {
         clouds[i].show();
@@ -604,10 +583,8 @@ function updateItems() {
 // If the button is pressed the player will move on the x-axis with the direction chosen.
 function keyDown(e) {
     if (e.keyCode === 39 || e.keyCode === 68) { // Right arrow key, or D key
-        /* player.xSpeed = playerXSpeed; */
         RIGHT = true;
     } else if (e.keyCode === 37 || e.keyCode === 65) { // Left arrow key, or A key
-        /* player.xSpeed = 0 - playerXSpeed; */
         LEFT = true;
     }
     /* console.log(e); */
@@ -662,7 +639,6 @@ function resetGlobalVariables() {
     gravity = 1;
     player.ySpeed = 3;
     player.xSpeed = 0;
-    /* player.y = 1000; */
     startNewGame();
 }
 
@@ -747,20 +723,20 @@ async function registerNewHighScore(loggedScore) {
 // Registers a new user in the database with the highscore they have.
 
 async function registerNewUser(newToken, db) {
-    const username = "Anonymous";
+    const username = defaultUsername;
     let newUsername;
 
     if (username === undefined || username === null) {
-        newUsername = "Anonymous";
-    } else if (username.length > 10) {
+        newUsername = defaultUsername;
+    } else if (username.length > maximumUsernameLength) {
         newUsername = username.slice(0, 10);
-    } else if (username.length < 1) {
-        newUsername = "Anonymous";
+    } else if (username.length < minimumUsernameLength) {
+        newUsername = defaultUsername;
     }
 
     try {
         set(ref(db, `users/${newToken}`), {
-            username: newUsername || username || "Anonymous",
+            username: newUsername || username || defaultUsername,
             highScore,
         }).then(() => {
             console.log("Successfully registered new high score!");
