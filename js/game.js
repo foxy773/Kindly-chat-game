@@ -3,14 +3,6 @@ import {
     // eslint-disable-next-line import/no-unresolved, import/extensions
 } from "https://www.gstatic.com/firebasejs/9.9.0/firebase-database.js";
 
-if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
-    window.document.addEventListener("touchmove", (e) => {
-        if (e.scale !== 1) {
-            e.preventDefault();
-        }
-    }, { passive: false });
-}
-
 document.ontouchmove = function (event) {
     event.preventDefault();
 };
