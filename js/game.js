@@ -141,6 +141,9 @@ let lastIndex;
 let audioEnabled = true;
 let musicEnabled = true;
 let gamePaused = false;
+const defaultJumpHeight = -400 * scaleRatio;
+const springJumpHeight = -2000 * scaleRatio;
+
 
 setPixelToWorldScale();
 window.addEventListener("resize", setPixelToWorldScale);
@@ -156,6 +159,7 @@ function setPixelToWorldScale() {
 
     worldElem.style.width = `${WORLD_WIDTH * worldToPixelScale}px`;
     worldElem.style.height = `${WORLD_HEIGHT * worldToPixelScale}px`;
+
     return worldToPixelScale;
 }
 
@@ -307,7 +311,7 @@ class Platform {
             && this.wasAbove && this.visible
             && player.ySpeed > 0
             && this.broken === false) {
-            player.ySpeed = -400 * scaleRatio; // The player speed on the y-axis upon collision.
+            player.ySpeed = defaultJumpHeight;// The player speed on the y-axis upon collision.
             playSound("playerJump", 0.5);
             updateScore();
 
@@ -318,7 +322,7 @@ class Platform {
                 this.broken = true;
                 playSound("woodPlatformBreakes", 1);
             } else if (this.hasSpring) {
-                player.ySpeed = -2000 * scaleRatio;
+                player.ySpeed = springJumpHeight;
                 enemyDisabled = true;
                 playSound("launchPlatform", 0.5);
             }
@@ -365,7 +369,7 @@ class Enemy {
 
     show() {
         if (enemyDisabled === false) {
-            c.translate(this.x + 15, this.y);
+            c.translate(this.x + 15 * scaleRatio, this.y);
             c.rotate(this.rotation);
             c.translate(-(this.x), -(this.y));
             c.drawImage(images.enemy[0], (this.x - this.r), (this.y - this.r), this.width, this.height);
@@ -465,9 +469,8 @@ function startNewGame() {
 function generateplatforms() {
     if (startGenerationPlatforms) {
         platformY = canvas.height;
-        startGenerationPlatforms = false;
     } else {
-        platformY = platforms[platforms.length - 1].y;
+        platformY = platforms[platforms.length - 1].y - 100 * scaleRatio;
     }
     const numberOfplatforms = 100;
     for (let i = 0; i < numberOfplatforms; i += 1) {
@@ -481,10 +484,14 @@ function generateplatforms() {
         platformY -= 100 * scaleRatio;
     }
 
-    platforms[0].width = 1000 * scaleRatio;
-    platforms[0].x = 0;
-    platforms[0].chance = -1;
-    platforms[0].height = 800 * scaleRatio;
+    if (startGenerationPlatforms) {
+        platforms[0].width = 1000 * scaleRatio;
+        platforms[0].x = 0;
+        platforms[0].chance = -1;
+        platforms[0].height = 800 * scaleRatio;
+        startGenerationPlatforms = false;
+    }
+
     console.log(platforms);
 }
 
@@ -544,7 +551,7 @@ function updateGame() {
     now = performance.now();
     delta = now - then;
 
-    if (delta > interval) {
+    if (delta > interval - 0.2) {
         then = now - (delta % interval);
 
         if (RIGHT) {
@@ -559,6 +566,9 @@ function updateGame() {
             draw();
             updateItems();
         }
+    } else {
+        console.log("delta", delta, "interval", interval);
+        window.cancelAnimationFrame(updateGame);
     }
 }
 
@@ -618,7 +628,7 @@ function keyUp(e) {
     } else if (e.keyCode === 65 || e.keyCode === 37) {
         LEFT = false;
     } else if ((e.keyCode === 27 || e.keyCode === 13 || e.keyCode === 32)
-    && changeUsernamePrompt.classList.contains("hidden")) { // pause the game
+        && changeUsernamePrompt.classList.contains("hidden")) { // pause the game
         togglePause();
     }
 }
@@ -745,7 +755,7 @@ async function registerNewHighScore(loggedScore) {
 // Registers a new user in the database with the highscore they have.
 
 async function registerNewUser(newToken, db) {
-    const username = prompt("Please enter your username");
+    const username = "Anonymous";
     let newUsername;
 
     if (username === undefined || username === null) {
@@ -861,6 +871,7 @@ async function appendHighscores() {
             let you = "";
             if (user.id === userToken) {
                 you = "(You)";
+                highscoreItem.id = "you";
             }
 
             if (i === 0) {
@@ -890,7 +901,7 @@ const changeUsernamePromptInput = document.querySelector("#username-input");
 const changeUsernamePromptSubmit = document.querySelector("#username-submit");
 const changeUsernamePromptCancel = document.querySelector("#username-cancel");
 
-function changeUsername() {
+async function changeUsername() {
     /* changeUsernamePromptInput.value = ""; */
     if (changeUsernamePrompt.classList.contains("hidden")) {
         changeUsernamePrompt.classList.remove("hidden");
@@ -898,31 +909,35 @@ function changeUsername() {
         gameWindow.classList.remove("hidden");
         gameMenuBar.classList.add("hidden");
     }
+    const db = getDatabase();
+    const getUserDatabase = await getFromDatabase();
 
     let newUsername = "";
-        const userToken = localStorage.getItem("user");
-
-    const db = getDatabase();
+    const userToken = localStorage.getItem("user");
+    const foundUser = getUserDatabase.find((user) => user.id === userToken);
+    newUsername = foundUser.username;
+    changeUsernamePromptInput.value = newUsername;
+    changeUsernamePromptInput.focus();
     if (localStorage.getItem("user") !== null || localStorage.getItem("user") !== undefined) {
         changeUsernamePromptSubmit.addEventListener("click", () => {
             changeUsernamePrompt.classList.add("hidden");
-        gameMenu.classList.remove("hidden");
-        gameWindow.classList.add("hidden");
-        gameMenuBar.classList.remove("hidden");
-        newUsername = changeUsernamePromptInput.value;
-        if (newUsername.length > 1 && newUsername.length <= 10) {
-            updateUsername(userToken, newUsername, db);
-        } else {
-            console.log("Username is too long or too short");
-        }
+            gameMenu.classList.remove("hidden");
+            gameWindow.classList.add("hidden");
+            gameMenuBar.classList.remove("hidden");
+            newUsername = changeUsernamePromptInput.value;
+            if (newUsername.length > 1 && newUsername.length <= 10) {
+                updateUsername(userToken, newUsername, db);
+            } else {
+                console.log("Username is too long or too short");
+            }
         });
 
         changeUsernamePromptCancel.addEventListener("click", () => {
             changeUsernamePrompt.classList.add("hidden");
-        gameMenu.classList.remove("hidden");
-        gameWindow.classList.add("hidden");
-        gameMenuBar.classList.remove("hidden");
-        newUsername = changeUsernamePromptInput.value;
+            gameMenu.classList.remove("hidden");
+            gameWindow.classList.add("hidden");
+            gameMenuBar.classList.remove("hidden");
+            newUsername = changeUsernamePromptInput.value;
         });
     } else {
         console.log("Could not change username");
