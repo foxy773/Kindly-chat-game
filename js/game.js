@@ -34,80 +34,6 @@ window.onload = (() => {
     appendHighscores();
 });
 
-import Cloud from "./classes/cloud.js";
-import Player from "./classes/player.js";
-import Platform from "./classes/platform.js";
-import Enemy from "./classes/enemy.js";
-
-/* // Starts a new game.
-function startNewGame() {
-    if (settings.gamePaused) {
-        togglePause();
-    }
-    findUser();
-    appendHighscores();
-    settings.gamePaused = false;
-    settings.score = 0;
-    settings.startGenerationPlatforms = true;
-    settings.startGenerationEnemies = true;
-    settings.platforms = [];
-    settings.enemies = [];
-    // The start position x-axis, y-axis, and radius size of the player.
-    settings.player = new Player(global.playerStartX, global.playerStartY, global.playerRadius);
-    generateBackground();
-    generateplatforms();
-    generateEnemies();
-    settings.player.xSpeed = 0;
-    console.log("NEW GAME!");
-} */
-
-/* // Generates the platforms.
-function generateplatforms() {
-    if (settings.startGenerationPlatforms) {
-        settings.platformY = global.canvas.height;
-    } else {
-        settings.platformY = settings.platforms[settings.platforms.length - 1].y - global.distanceBetweenPlatforms;
-    }
-    for (let i = 0; i < global.numberOfplatforms; i += 1) {
-        const image = global.images.platforms;
-
-        // Random x-axis position between 0 and 600.
-        const ob = new Platform(Math.floor(Math.random()
-            * (global.canvas.width - global.platformWidth)), settings.platformY, image);
-
-        settings.platforms.push(ob);
-        settings.platformY -= global.distanceBetweenPlatforms;
-    }
-
-    if (settings.startGenerationPlatforms) {
-        settings.platforms[0].width = global.firstPlatformWidth;
-        settings.platforms[0].x = 0;
-        settings.platforms[0].chance = -1;
-        settings.platforms[0].height = global.firstPlatformHeight;
-        settings.startGenerationPlatforms = false;
-    }
-
-    console.log(settings.platforms);
-} */
-
-// Generates the platforms.
-/* function generateEnemies() {
-    if (settings.startGenerationEnemies) {
-        settings.enemyY = global.canvas.height - global.enemyDistanceBetween;
-        settings.startGenerationEnemies = false;
-    } else {
-        settings.enemyY = settings.enemies[settings.enemies.length - 1].y - global.enemyDistanceBetween;
-    }
-    const numberOfEnemies = 20;
-
-    // Random x-axis position between 0 and 600.
-    for (let i = 0; i < numberOfEnemies; i += 1) {
-        const en = new Enemy(Math.floor(Math.random() * (global.canvas.width - global.enemyWidth)), settings.enemyY);
-        settings.enemies.push(en);
-        settings.enemyY -= global.enemyDistanceBetween;
-    }
-} */
-
 // Updates the game
 function updateGame() {
     window.requestAnimationFrame(updateGame);
@@ -131,8 +57,10 @@ function updateGame() {
             updateItems();
         }
     } else {
-        window.cancelAnimationFrame(updateGame);
+        console.log("FRAMEDROP!")
+        
     }
+    
 }
 
 function draw() {
@@ -210,17 +138,6 @@ mobileTouchRight.addEventListener("touchend", () => {
     settings.RIGHT = false;
 });
 
-function resetGlobalVariables() {
-    settings.enemyDisabled = false;
-    settings.platforms = [];
-    settings.enemies = [];
-    settings.clouds = [];
-    settings.gravity = 1;
-    settings.player.ySpeed = 3;
-    settings.player.xSpeed = 0;
-    startNewGame();
-}
-
 function drawScores() {
     //  Score
     global.c.font = `${60 * global.scaleRatio}px IBMPlexSans-Bold`;
@@ -240,62 +157,6 @@ function drawScores() {
 document.onkeydown = keyDown;
 document.onkeyup = keyUp;
 
-// Generates a random uid for the user.
-const rand = () => Math.random(0).toString(36).substr(2);
-const token = (length) => (rand() + rand() + rand() + rand()).substr(0, length);
-
-async function registerNewHighScore(loggedScore) {
-    const db = getDatabase();
-    const newToken = token(32);
-
-    if (localStorage.getItem("user") === null) {
-        localStorage.setItem("user", newToken);
-        registerNewUser(newToken, db);
-    } else {
-        updateUserHighscore(localStorage.getItem("user"), loggedScore, db);
-        console.log("updated");
-    }
-}
-
-// Registers a new user in the database with the highscore they have.
-
-async function registerNewUser(newToken, db) {
-    const username = global.defaultUsername;
-    let newUsername;
-
-    if (username === undefined || username === null) {
-        newUsername = global.defaultUsername;
-    } else if (username.length > global.maximumUsernameLength) {
-        newUsername = username.slice(0, 10);
-    } else if (username.length < global.minimumUsernameLength) {
-        newUsername = global.defaultUsername;
-    }
-
-    try {
-        set(ref(db, `users/${newToken}`), {
-            username: newUsername || username || global.defaultUsername,
-            highScore: settings.highScore,
-        }).then(() => {
-            console.log("Successfully registered new high score!");
-        });
-    } catch (err) {
-        console.log(err, "ERROR! Could not register new high score");
-    }
-}
-
-// Updates the highscore of a user that exists in the database.
-
-async function updateUserHighscore(userToken, newScore, db) {
-    try {
-        update(ref(db, `users/${userToken}`), {
-            highScore: newScore,
-        }).then(() => {
-            console.log("Successfully updated high score!");
-        });
-    } catch (err) {
-        console.log(err, "ERROR! Could not update high score");
-    }
-}
 
 // Updates the username of a user that exists in the database.
 
@@ -427,25 +288,6 @@ global.goToMainMenuButton.addEventListener("click", () => {
 global.pausedChangeUsernameButton.addEventListener("click", () => {
     changeUsername();
 });
-
-/* function togglePause() {
-    if (settings.gamePaused) {
-        settings.gamePaused = false;
-        pauseGameButton.innerHTML = "Pause";
-        pauseGameContainer.classList.add("hidden");
-        if (settings.musicEnabled) {
-            global.backgroundMusic.play();
-        } else if (settings.audioEnabled) {
-            playSound("resumeGame", 0.5);
-        }
-    } else {
-        settings.gamePaused = true;
-        pauseGameButton.innerHTML = "Resume";
-        pauseGameContainer.classList.remove("hidden");
-        global.backgroundMusic.pause();
-        playSound("pauseGame", 0.5);
-    }
-} */
 
 function goToMainMenu() {
     global.gameWindow.classList.add("hidden");

@@ -13,7 +13,7 @@ export const settings = {
     RIGHT: false,
     gravity: 1,
     score: undefined,
-    highscore: undefined,
+    highScore: 0,
     lastIndex: undefined,
     audioEnabled: true,
     musicEnabled: true,

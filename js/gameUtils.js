@@ -37,6 +37,19 @@ export function playSound(audio, soundVolume) { // Plays sounds based on method 
     }
 }
 
+export async function registerNewHighScore(loggedScore) {
+    const db = getDatabase();
+    const newToken = token(32);
+
+    if (localStorage.getItem("user") === null) {
+        localStorage.setItem("user", newToken);
+        registerNewUser(newToken, db);
+    } else {
+        updateUserHighscore(localStorage.getItem("user"), loggedScore, db);
+        console.log("updated");
+    }
+}
+
 export const updateScore = () => {
     settings.score = settings.platforms.filter((platform) => platform.visible === false).length + 2;
 };
@@ -137,13 +150,16 @@ async function findUser() {
     const userToken = localStorage.getItem("user");
     const storedHighscores = await getFromDatabase();
     console.log(storedHighscores, "storedHighscores");
-    if (storedHighscores === undefined || storedHighscores === null || storedHighscores === []) {
-        console.log("No highscores found");
+    if (storedHighscores == undefined || storedHighscores === null || storedHighscores === []) {
+        console.log("No highscores found", storedHighscores);
         settings.highScore = 0;
     } else {
         userStoredHighscore = storedHighscores.find((user) => user.id === userToken);
+        if (userStoredHighscore === undefined) {
+        } else {
         settings.highScore = userStoredHighscore.highScore;
-        console.log("foundUser and got highscore");
+        console.log("foundUser and got highscore", userStoredHighscore.highScore);
+        }
     }
 }
 
@@ -258,5 +274,49 @@ export function togglePause() {
         global.pauseGameContainer.classList.remove("hidden");
         global.backgroundMusic.pause();
         playSound("pauseGame", 0.5);
+    }
+}
+
+// Generates a random uid for the user.
+const rand = () => Math.random(0).toString(36).substr(2);
+const token = (length) => (rand() + rand() + rand() + rand()).substr(0, length);
+
+// Updates the highscore of a user that exists in the database.
+
+async function updateUserHighscore(userToken, newScore, db) {
+    try {
+        update(ref(db, `users/${userToken}`), {
+            highScore: newScore,
+        }).then(() => {
+            console.log("Successfully updated high score!");
+        });
+    } catch (err) {
+        console.log(err, "ERROR! Could not update high score");
+    }
+}
+
+// Registers a new user in the database with the highscore they have.
+
+async function registerNewUser(newToken, db) {
+    const username = global.defaultUsername;
+    let newUsername;
+
+    if (username === undefined || username === null) {
+        newUsername = global.defaultUsername;
+    } else if (username.length > global.maximumUsernameLength) {
+        newUsername = username.slice(0, 10);
+    } else if (username.length < global.minimumUsernameLength) {
+        newUsername = global.defaultUsername;
+    }
+
+    try {
+        set(ref(db, `users/${newToken}`), {
+            username: newUsername || username || global.defaultUsername,
+            highScore: settings.highScore,
+        }).then(() => {
+            console.log("Successfully registered new high score!");
+        });
+    } catch (err) {
+        console.log(err, "ERROR! Could not register new high score");
     }
 }
