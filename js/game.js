@@ -69,17 +69,14 @@ function draw() {
 
     for (let i = 0; i < settings.clouds.length; i += 1) {
         settings.clouds[i].show();
-        settings.clouds[i].update();
     }
 
     for (let i = 0; i < settings.platforms.length; i += 1) {
         settings.platforms[i].show();
-        settings.platforms[i].update();
     }
 
     for (let i = 0; i < settings.enemies.length; i += 1) {
         settings.enemies[i].show();
-        settings.enemies[i].update();
     }
 
     settings.player.show();
@@ -87,6 +84,17 @@ function draw() {
 }
 
 function updateItems() {
+    for (let i = 0; i < settings.clouds.length; i += 1) {
+        settings.clouds[i].update();
+    }
+
+    for (let i = 0; i < settings.platforms.length; i += 1) {
+        settings.platforms[i].update();
+    }
+
+    for (let i = 0; i < settings.enemies.length; i += 1) {
+        settings.enemies[i].update();
+    }
     settings.player.update();
     settings.player.ySpeed += settings.gravity * 10 * global.scaleRatio;
 
