@@ -2,7 +2,47 @@
 	box-sizing: border-box;
 	margin: 0;
 	padding: 0;
+
+	touch-action: pan-x pan-y;
+	touch-action: none;
+
+	-webkit-touch-callout: none;
+	/* iOS Safari */
+	-webkit-user-select: none;
+	/* Safari */
+	-khtml-user-select: none;
+	/* Konqueror HTML */
+	-moz-user-select: none;
+	/* Old versions of Firefox */
+	-ms-user-select: none;
+	/* Internet Explorer/Edge */
+	user-select: none;
+	/* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
 }
+
+/* ===== Scrollbar CSS ===== */
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #ffffff #313131;
+  }
+
+  /* Chrome, Edge, and Safari */
+  *::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: #313131;
+	border-radius: 1rem;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: #ffffff;
+    border: 3px none #ffffff;
+	border-radius: 1rem;
+  }
 
 button {
 	border: 0;

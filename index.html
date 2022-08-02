@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Frameout</title>
     <link rel="stylesheet" href="./css/fonts.css">
     <link rel="stylesheet" href="./css/reset.css">
@@ -14,40 +14,67 @@
 </head>
 
 <body>
-    <ul class="kindly-scoreboard" id="kindly-highscore-list"></ul>  <!--!!! To remove before release.-->
-    <div class="top-player" id="best-player-container">                                        <!--!!! To remove before release.-->
-        <img class="top-player__star" src="/assets/star.png" alt="">
-        
-    </div>
-    <section class="game-window">
+    <section class="game-window" data-world>
         <div class="game-window__menu">
             <div class="menu__title">
                 <p class="title__name">AIRFRAME</p>
                 <p class="title__under-name">THE GAME</p>
             </div>
             <div class="menu__selection">
-                <button class="selection__button" id="start-game">START</button>
-                <button class="selection__button" id="show-rules">INSTRUCTIONS</button>
-                <button class="selection__button" id="change-username">CHANGE USERNAME</button>
-                <button class="selection__button" id="exit-game">EXIT</button>
+                <button class="selection__button" id="start-game">🎬 START</button>
+<!--                 <button class="selection__button" id="show-rules">📝 INSTRUCTIONS</button> -->
+                <button class="selection__button" id="change-username">✍️ CHANGE USERNAME</button>
             </div>
             <ul class="menu__score-board" id="highscore-list">
-                                <!-- <li class="score-board__item">
-                    <span class="score-board__item-name">NAME</span>
-                    <span class="score-board__item-highscore" id="name">10000</span>
-                </li>
-                <li class="score-board__item">
-                    <span class="score-board__item-name">NAME</span>
-                    <span class="score-board__item-highscore" id="name">9821</span>
-                </li> -->
             </ul>
         </div>
+        
         <div class="game-window__game hidden">
+            <div class="game__menu-bar">
+                <div class="menu-bar__pause">
+                    <button class="pause__button" id="pause-game">PAUSE</button>
+                </div>
+                <div class="menu-bar__button-container">
+                    <button class="menu-bar__audio-button on nooutline" id="audio-on-off">
+                        <img class="menu-bar__audio-image" src="./assets/audio-on.png" alt="">
+                    </button>
+                    <button class="menu-bar__music-button on nooutline" id="music-on-off">
+                        <img class="menu-bar__music-image" src="./assets/music-on.png" alt="">
+                    </button>
+                </div>
+            </div>
             <div class="game__mobile-controller">
                 <div class="mobile-controller__left" id="mobile-touch-left"></div>
                 <div class="mobile-controller__right" id="mobile-touch-right"></div>
             </div>
-            <canvas class="" width="600" height="600" id="game"></canvas>
+            <div class="game__pause-container hidden">
+                <div class="pause-container__content">
+                    <div class="pause-container__title">
+                        <p class="title__name">PAUSED</p>
+                    </div>
+                    <div class="pause-container__selection">
+                        <button class="selection__button paused-menu-button" id="paused-resume-game">🎬 RESUME</button>
+<!--                         <button class="selection__button paused-menu-button" id="paused-show-rules">📝 INSTRUCTIONS</button> -->
+                        <button class="selection__button paused-menu-button" id="paused-change-username">✍️ CHANGE USERNAME</button>
+                        <button class="selection__button paused-menu-button" id="paused-to-main-menu">🛌 MAIN MENU</button>
+                    </div>
+                </div>
+            </div>
+            <div class="game__username-prompt hidden">
+                <div class="username-prompt__content">
+                    <div class="username-prompt__title">
+                        <p class="title__username">CHANGE USERNAME</p>
+                    </div>
+                    <div class="username-prompt__input-container">
+                        <input class="username-prompt__input" id="username-input" type="text" value="" placeholder="Enter your username">
+                    </div>
+                    <div class="username-prompt__selection">
+                        <button class="selection__button username-prompt-button" id="username-submit">🚀 SUBMIT</button>
+                        <button class="selection__button username-prompt-button" id="username-cancel">🚫 CANCEL</button>
+                    </div>
+                </div>
+            </div>
+            <canvas class="hidden" id="game"></canvas>
         </div>
         </div>
     </section>

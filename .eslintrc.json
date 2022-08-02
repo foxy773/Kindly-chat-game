@@ -15,10 +15,10 @@
         "indent": ["warn", 4],
         "jsx-quotes": ["warn", "prefer-double"],
         "quotes": ["error", "double"],
-        "no-use-before-define": ["error", { "functions": false }],
         "no-param-reassign":"off",
         "max-len": ["warn", { "code": 120 }],
         "no-use-before-define": "warn",
-        "consistent-return": "warn"
+        "consistent-return": "warn",
+        "import/extensions": "warn"
     }
 }
