@@ -1,15 +1,13 @@
 import {
-    getDatabase, ref, set, update, get,
+    getDatabase, ref, update,
     // eslint-disable-next-line import/no-unresolved, import/extensions
 } from "https://www.gstatic.com/firebasejs/9.9.0/firebase-database.js";
 
 import * as global from "./global.js";
-import { settings } from "./settings.js";
-import { playSound, updateScore, generateplatforms, generateEnemies, startNewGame, togglePause, appendHighscores, gameOver, getFromDatabase} from "./gameUtils.js";
-
-document.ontouchmove = function (event) {
-    event.preventDefault();
-};
+import settings from "./settings.js";
+import {
+    startNewGame, togglePause, appendHighscores, gameOver, getFromDatabase, generateEnemies, generatePlatforms,
+} from "./gameUtils.js";
 
 global.backgroundMusic.volume = 0.5;
 global.backgroundMusic.loop = true;
@@ -35,41 +33,37 @@ window.onload = (() => {
 });
 
 // Updates the game every frame.
-function updateGame() {
-    window.requestAnimationFrame(updateGame);
 
-    settings.now = performance.now();
-    settings.delta = settings.now - settings.then;
+let lastFrameTime = 0;
 
-    if (settings.delta > global.interval - 0.2) {
-        settings.then = settings.now - (settings.delta % global.interval);
+function updateGame(timestamp) {
+    if (timestamp < lastFrameTime + (global.interval)) {
+        window.requestAnimationFrame(updateGame);
+        return;
+    }
+    settings.delta += timestamp - lastFrameTime;
+    lastFrameTime = timestamp;
 
-        if (settings.RIGHT) {
-            settings.player.xSpeed = global.playerXSpeed;
-        } else if (settings.LEFT) {
-            settings.player.xSpeed = 0 - global.playerXSpeed;
-        } else {
-            settings.player.xSpeed = 0;
-        }
-
+    while (settings.delta >= global.interval) {
         if (!settings.gamePaused) {
-            draw();
-            updateItems();
+            updateItems(global.interval);
         }
-    } else {
-        console.log("FRAMEDROP!")
-        
+        settings.delta -= global.interval;
     }
-    
-}
 
-// Updates the player's speed based on gravity
-setInterval(() => {
-    if (!settings.gamePaused) {
-        settings.player.ySpeed += settings.gravity * 10 * global.scaleRatio;
+    if (settings.RIGHT) {
+        settings.player.xSpeed = global.playerXSpeed;
+    } else if (settings.LEFT) {
+        settings.player.xSpeed = 0 - global.playerXSpeed;
+    } else {
+        settings.player.xSpeed = 0;
     }
+
+    if (!settings.gamePaused) {
+        draw();
+    }
+    window.requestAnimationFrame(updateGame);
 }
-, 16.6);
 
 function draw() {
     global.c.fillStyle = "lightblue";
@@ -91,7 +85,7 @@ function draw() {
     drawScores();
 }
 
-function updateItems() {
+function updateItems(dt) {
     for (let i = 0; i < settings.clouds.length; i += 1) {
         settings.clouds[i].update();
     }
@@ -104,10 +98,23 @@ function updateItems() {
         settings.enemies[i].update();
     }
     settings.player.update();
+    settings.player.ySpeed += settings.gravity * dt * global.scaleRatio;
 
     settings.lastIndex = settings.platforms.map((platform) => platform.visible).lastIndexOf(false);
     if (settings.platforms[settings.lastIndex]?.y < settings.player.y - 500 * global.scaleRatio || settings.platforms[0].y < settings.player.y - 500 * global.scaleRatio) {
         gameOver();
+    }
+    if (settings.gameOver) {
+        gameOver();
+        settings.gameOver = false;
+    }
+    if (settings.generateEnemies) {
+        generateEnemies();
+        settings.generateEnemies = false;
+    }
+    if (settings.generatePlatforms) {
+        generatePlatforms();
+        settings.generatePlatforms = false;
     }
 }
 // Event Listeners
@@ -171,7 +178,6 @@ function drawScores() {
 }
 document.onkeydown = keyDown;
 document.onkeyup = keyUp;
-
 
 // Updates the username of a user that exists in the database.
 
