@@ -34,7 +34,7 @@ window.onload = (() => {
     appendHighscores();
 });
 
-// Updates the game
+// Updates the game every frame.
 function updateGame() {
     window.requestAnimationFrame(updateGame);
 
@@ -62,6 +62,14 @@ function updateGame() {
     }
     
 }
+
+// Updates the player's speed based on gravity
+setInterval(() => {
+    if (!settings.gamePaused) {
+        settings.player.ySpeed += settings.gravity * 10 * global.scaleRatio;
+    }
+}
+, 16.6);
 
 function draw() {
     global.c.fillStyle = "lightblue";
@@ -96,7 +104,6 @@ function updateItems() {
         settings.enemies[i].update();
     }
     settings.player.update();
-    settings.player.ySpeed += settings.gravity * 10 * global.scaleRatio;
 
     settings.lastIndex = settings.platforms.map((platform) => platform.visible).lastIndexOf(false);
     if (settings.platforms[settings.lastIndex]?.y < settings.player.y - 500 * global.scaleRatio || settings.platforms[0].y < settings.player.y - 500 * global.scaleRatio) {
