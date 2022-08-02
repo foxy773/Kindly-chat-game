@@ -1,5 +1,5 @@
-import * as global from "./../global.js";
-import { settings } from "./../settings.js";
+import * as global from "../global.js";
+import settings from "../settings.js";
 
 class Cloud {
     constructor(x, y, width, height, xSpeed, image) {

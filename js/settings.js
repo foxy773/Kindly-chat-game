@@ -1,4 +1,4 @@
-export const settings = {
+const settings = {
     player: undefined,
     platformY: undefined,
     enemyY: undefined,
@@ -8,10 +8,11 @@ export const settings = {
     enemyDisabled: false,
     now: undefined,
     then: performance.now(),
-    delta: undefined,
+    delta: 0,
+    lastFrameTime: 0,
     LEFT: false,
     RIGHT: false,
-    gravity: 1,
+    gravity: 0.6,
     score: undefined,
     highScore: 0,
     lastIndex: undefined,
@@ -21,4 +22,8 @@ export const settings = {
     platforms: [],
     enemies: [],
     clouds: [],
+    gameOver: false,
+    generateEnemies: false,
+    generatePlatforms: false,
 };
+export default settings;

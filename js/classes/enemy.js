@@ -1,6 +1,5 @@
-import * as global from "./../global.js";
-import { settings } from "./../settings.js";
-import { playSound, updateScore, gameOver, resetGlobalVariables, generateEnemies} from "./../gameUtils.js";
+import * as global from "../global.js";
+import settings from "../settings.js";
 
 function getDistance(x1, y1, x2, y2) {
     const xDis = x2 - x1;
@@ -59,8 +58,7 @@ class Enemy {
         const distanceBetweenPlayerEnemy = getDistance(this.x, this.y, settings.player.x, settings.player.y);
 
         if (distanceBetweenPlayerEnemy < this.r + settings.player.r && this.visible === true && settings.enemyDisabled === false) {
-            gameOver();
-            console.log("Died by enemy", this);
+            settings.gameOver = true;
         }
 
         if (this.moving && settings.enemyDisabled === false) {
@@ -75,7 +73,7 @@ class Enemy {
         // Auto generates platforms and additions the level + 1
         // If the player is above the 10th platform from the bottom.
         if (settings.player.y < settings.enemies[settings.enemies.length - 5].y) {
-            generateEnemies();
+            settings.generateEnemies = true;
         }
 
         // Counteracts the falling of the player to help the illusion of the player jumping

@@ -3,12 +3,115 @@ import {
     // eslint-disable-next-line import/no-unresolved, import/extensions
 } from "https://www.gstatic.com/firebasejs/9.9.0/firebase-database.js";
 import * as global from "./global.js";
-import { settings } from "./settings.js";
-import Platform from "./classes/platform.js";
+import settings from "./settings.js";
+/* import Platform from "./classes/platform.js"; */
 import Enemy from "./classes/enemy.js";
 import Player from "./classes/player.js";
 import Cloud from "./classes/cloud.js";
 
+class Platform {
+    constructor(x, y, image) {
+        this.x = x;
+        this.y = y;
+        this.width = global.platformWidth;
+        this.height = global.platformHeight;
+        this.ySpeed = 3 * global.scaleRatio;
+        this.visible = true;
+        this.moving = false; // Not used
+        this.wasAbove = false;
+        this.oneJumpOnly = false;
+        this.broken = false;
+        this.hasSpring = false;
+        this.image = image;
+        this.chance = Math.floor(Math.random() * 20);
+    }
+
+    show() {
+        /* if (this.y === platformY) {
+            this.chance === 10;
+        } */
+
+        // 25% chance of a platform being one jump only.
+        if (this.chance >= 0 && this.chance <= 5) {
+            this.oneJumpOnly = true;
+            //  5% chance of a platform having a spring.
+        } else if (this.chance === 6) {
+            this.hasSpring = true;
+        }
+        if (this.visible && this.chance === -1) {
+            global.c.drawImage(this.image[4], this.x, this.y, this.width, this.height);
+        } else if (this.visible && this.oneJumpOnly === false && this.hasSpring === false) {
+            // Draws the normal platform.
+            /* c.drawImage(this.x, this.y, this.width, ); */
+            global.c.drawImage(this.image[0], this.x, this.y, this.width, this.height);
+        } else if (this.visible && this.oneJumpOnly) {
+            // Draws the platform that only allows the player to jump once.
+            global.c.drawImage(this.image[1], this.x, this.y, this.width, this.height);
+        } else if (this.visible && this.hasSpring) {
+            // Draws the platform that has a spring.
+            global.c.drawImage(this.image[2], this.x, this.y, this.width, this.height);
+        }
+
+        if (this.broken) {
+            // Draws the broken platform.
+            global.c.clearRect(this.x, this.y, this.width, this.height);
+            global.c.fillRect(this.x, this.y, this.width, this.height);
+            /*             c.fillStyle = "red"; */
+            global.c.drawImage(this.image[3], this.x, this.y, this.width, this.height);
+        }
+    }
+
+    update() {
+        // Removes the platforms that are below the player and out of frame
+        if (this.y > global.canvas.height + (150 * global.scaleRatio)) {
+            this.visible = false;
+        }
+
+        // If the platform is above the player.
+        if (settings.player.y < this.y - (21 * global.scaleRatio)) {
+            this.wasAbove = true;
+        }
+
+        // Collision Detection between player and platform
+        if (settings.player.x < this.x + this.width && settings.player.x + settings.player.width > this.x
+            && settings.player.y < this.y + this.height
+            && settings.player.y + settings.player.height > this.y
+            && this.wasAbove && this.visible
+            && settings.player.ySpeed > 0
+            && this.broken === false) {
+            settings.player.ySpeed = global.defaultJumpHeight;// The player speed on the y-axis upon collision.
+            playSound("playerJump", 0.5);
+            updateScore();
+
+            settings.currentPlayerFace = "hurt";
+
+            settings.enemyDisabled = false;
+            if (this.oneJumpOnly && this.broken === false) {
+                this.broken = true;
+                playSound("woodPlatformBreakes", 1);
+            } else if (this.hasSpring) {
+                settings.player.ySpeed = global.springJumpHeight;
+                settings.enemyDisabled = true;
+                playSound("launchPlatform", 0.5);
+            }
+        }
+
+        // Auto generates platforms and additions the level + 1
+        // If the player is above the 10th platform from the bottom.
+        if (settings.player.y < settings.platforms[settings.platforms.length - 10].y) {
+            settings.generatePlatforms = true;
+            /*  console.log("Generate new platforms", this.ySpeed, "ySpeed") */
+        }
+
+        if (settings.player.ySpeed >= 0) {
+            settings.currentPlayerFace = "default";
+        } else if (settings.player.ySpeed < -500 * global.scaleRatio) {
+            settings.currentPlayerFace = "shocked";
+        }
+
+        this.y -= settings.player.ySpeed * 0.03;
+    }
+}
 
 export function playSound(audio, soundVolume) { // Plays sounds based on method call strings
     const playerJump = "../sounds/SFX_Jump_42.wav";
@@ -69,14 +172,14 @@ export function resetGlobalVariables() {
     settings.platforms = [];
     settings.enemies = [];
     settings.clouds = [];
-    settings.gravity = 1;
+    settings.gravity = 0.6;
     settings.player.ySpeed = 3;
     settings.player.xSpeed = 0;
     startNewGame();
 }
 
 // Generates the platforms.
-export function generateplatforms() {
+export function generatePlatforms() {
     if (settings.startGenerationPlatforms) {
         settings.platformY = global.canvas.height;
     } else {
@@ -137,7 +240,7 @@ export function startNewGame() {
     // The start position x-axis, y-axis, and radius size of the player.
     settings.player = new Player(global.playerStartX, global.playerStartY, global.playerRadius);
     generateBackground();
-    generateplatforms();
+    generatePlatforms();
     generateEnemies();
     settings.player.xSpeed = 0;
     console.log("NEW GAME!");
@@ -150,15 +253,16 @@ async function findUser() {
     const userToken = localStorage.getItem("user");
     const storedHighscores = await getFromDatabase();
     console.log(storedHighscores, "storedHighscores");
-    if (storedHighscores == undefined || storedHighscores === null || storedHighscores === []) {
+    if (storedHighscores === undefined || storedHighscores === null || storedHighscores === []) {
         console.log("No highscores found", storedHighscores);
         settings.highScore = 0;
     } else {
         userStoredHighscore = storedHighscores.find((user) => user.id === userToken);
         if (userStoredHighscore === undefined) {
+            settings.highScore = 0;
         } else {
-        settings.highScore = userStoredHighscore.highScore;
-        console.log("foundUser and got highscore", userStoredHighscore.highScore);
+            settings.highScore = userStoredHighscore.highScore;
+            console.log("foundUser and got highscore", userStoredHighscore.highScore);
         }
     }
 }
@@ -259,7 +363,8 @@ export async function getFromDatabase() {
 }
 
 export function togglePause() {
-    if (settings.gamePaused) {
+    if (settings.gamePaused
+        && (!global.gameMenu.classList.contains("hidden") || !global.pauseGameContainer.classList.contains("hidden"))) {
         settings.gamePaused = false;
         global.pauseGameButton.innerHTML = "Pause";
         global.pauseGameContainer.classList.add("hidden");
@@ -268,7 +373,7 @@ export function togglePause() {
         } else if (settings.audioEnabled) {
             playSound("resumeGame", 0.5);
         }
-    } else {
+    } else if (!settings.gamePaused && global.gameMenu.classList.contains("hidden")) {
         settings.gamePaused = true;
         global.pauseGameButton.innerHTML = "Resume";
         global.pauseGameContainer.classList.remove("hidden");
