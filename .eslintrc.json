@@ -19,6 +19,6 @@
         "max-len": ["warn", { "code": 120 }],
         "no-use-before-define": "warn",
         "consistent-return": "warn",
-        "import/extensions": "never"
+        "import/extensions": "warn"
     }
 }
